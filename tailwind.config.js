@@ -37,7 +37,7 @@ module.exports = {
         '14': '3.5rem',
       },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: [ 'system-ui', 'Maven Pro', 'Poppins', 'Roboto', 'Inter var', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         code: {

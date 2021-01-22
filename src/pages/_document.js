@@ -36,6 +36,7 @@ export default class Document extends NextDocument {
     return (
       <Html lang="en">
         <InlineStylesHead>
+
           <link
             rel="preload"
             href="/fonts/Inter-roman.var-latin.woff2?3.13"
@@ -43,6 +44,7 @@ export default class Document extends NextDocument {
             type="font/woff2"
             crossOrigin="true"
           />
+
         </InlineStylesHead>
         <body>
           <Main />

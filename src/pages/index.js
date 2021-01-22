@@ -23,7 +23,7 @@ export default function Home() {
         <meta property="og:title" content="Blog – Tailwind CSS" />
         <meta property="og:description" content="News content from the Tailwind CSS team." />
         <meta property="og:image" content={`https://blog.tailwindcss.com${twitterCard}`} />
-        <title>Blog – Tailwind CSS</title>
+        <title>blog.lumontec</title>
         <meta name="description" content="News content from the Tailwind CSS team." />
       </Head>
       <div className="pt-10 pb-8 space-y-2 md:space-y-5">

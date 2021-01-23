@@ -31,9 +31,9 @@ export default function Home() {
 
 
 
-      <div className="md:grid md:grid-cols-12 gap-1 items-center pt-10 pb-8 ">
+      <div className="md:grid md:grid-cols-10 gap-1 items-center pt-10 pb-8 ">
 
-        <div className="md:col-start-1 md:col-end-10">
+        <div className="md:col-start-1 md:col-end-7">
           <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
           {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
@@ -43,7 +43,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="hidden md:inline-flex md:col-end-12 col-span-1">
+        <div className="hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
           <a href="https://github.com/lumontec">
             <img src={lumontec.avatar}  className="rounded-full border-2 border-teal-300" />          
           </a>
@@ -65,14 +65,14 @@ export default function Home() {
                     <time dateTime={meta.date}>{postDateTemplate.render(new Date(meta.date))}</time>
                   </dd>
                 </dl>
-                <div className="space-y-5 xl:col-span-6">
+                <div className="space-y-5 xl:col-span-5">
                   <div className="space-y-6">
-                    <h2 className="text-4xl leading-8 font-normal tracking-medium">
+                    <h2 className="text-3xl leading-8 font-normal tracking-medium">
                       <Link href={link}>
                         <a className="text-gray-600">{meta.title}</a>
                       </Link>
                     </h2>
-                    <div className="text-lg prose max-w-none font-normal text-gray-600">
+                    <div className="text-md prose max-w-none font-normal text-gray-600">
                       <Component />
                     </div>
                   </div>

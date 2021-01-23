@@ -82,8 +82,8 @@ module.exports = {
               backgroundColor: 'transparent',
               borderColor: theme('colors.gray.200'),
               borderWidth: '1px',
-              fontSize: '15px',
-              spacing: '20px'
+              fontSize: '13px',
+              // spacing: '20px'
             },
             blockquote: {
               color: theme('colors.gray.900'),

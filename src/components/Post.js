@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { MDXProvider } from '@mdx-js/react'
 
-// export const mdxComponents = {
-//   pre: ({ className, ...props }) => (
-//     <pre className={`${className} rounded-md bg-gray-800 py-3 px-4 overflow-x-auto`} {...props} />
-//   ),
-//   'pre.code': ({ className, ...props }) => (
-//     <code className={`${className} text-gray-200`} {...props} />
-//   ),
-// }
+export const mdxComponents = {
+  pre: ({ className, ...props }) => (
+    <pre className={`${className} rounded-md bg-gray-800 py-3 px-4 overflow-x-auto`} {...props} />
+  ),
+  'pre.code': ({ className, ...props }) => (
+    <code className={`${className} text-gray-200`} {...props} />
+  ),
+}
 
 
 

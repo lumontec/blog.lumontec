@@ -29,19 +29,19 @@ export default function Post({ meta, children, posts }) {
       <Head>
         <title>{meta.title} – Tailwind CSS</title>
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@tailwindcss" />
-        <meta name="twitter:creator" content="@tailwindcss" />
-        <meta name="twitter:title" content={`${meta.title} – Tailwind CSS`} />
+        <meta name="twitter:site" content="@lumontec" />
+        <meta name="twitter:creator" content="@lumontec" />
+        <meta name="twitter:title" content={`${meta.title} – blog.lumontec`} />
         <meta name="twitter:description" content={meta.description} />
-        <meta name="twitter:image" content={`https://blog.tailwindcss.com${meta.image}`} />
-        <meta property="og:url" content={`https://blog.tailwindcss.com${router.pathname}`} />
+        <meta name="twitter:image" content={`https://blog.lumontec.com${meta.image}`} />
+        <meta property="og:url" content={`https://blog.lumontec.com${router.pathname}`} />
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={`${meta.title} – Tailwind CSS`} />
+        <meta property="og:title" content={`${meta.title} – blog.lumontec`} />
         <meta property="og:description" content={meta.description} />
-        <meta property="og:image" content={`https://blog.tailwindcss.com${meta.image}`} />
+        <meta property="og:image" content={`https://blog.lumontec.com${meta.image}`} />
         <meta name="description" content={meta.description}></meta>
       </Head>
-      <header className="pt-6 xl:pb-10">
+      <header className="pt-4 xl:pb-10">
         <div className="space-y-1 text-center">
           <dl className="space-y-10">
             <div>
@@ -66,7 +66,9 @@ export default function Post({ meta, children, posts }) {
             <ul className="flex justify-center xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
               {meta.authors.map((author) => (
                 <li key={author.github} className="flex items-center space-x-2">
-                  <img src={author.avatar} alt="" className="w-10 h-10 rounded-full border-2 border-teal-200" />
+                  <a href={"https://github.com/" + author.github}>
+                    <img src={author.avatar} alt="" className="w-10 h-10 rounded-full border-2 border-teal-200" />
+                  </a>
                   <dl className="text-sm font-medium leading-5 whitespace-no-wrap">
                     <dt className="sr-only">Name</dt>
                     <dd className="text-gray-900">{author.name}</dd>

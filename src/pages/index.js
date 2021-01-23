@@ -2,7 +2,10 @@ import tinytime from 'tinytime'
 import Link from 'next/link'
 import Head from 'next/head'
 import getAllPostPreviews from '@/getAllPostPreviews'
-import twitterCard from '@/img/twitter-card.jpg'
+// import twitterCard from '@/img/twitter-card.jpg'
+import mediumLogo from '@/img/medium-logo.png'
+import linkedinLogo from '@/img/linkedin-logo.png'
+import githubLogo from '@/img/github-logo.png'
 import { lumontec } from '@/authors'
 
 
@@ -15,26 +18,26 @@ export default function Home() {
     <div className="divide-y divide-gray-200">
       <Head>
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@tailwindcss" />
-        <meta name="twitter:creator" content="@tailwindcss" />
-        <meta name="twitter:title" content="Blog – Tailwind CSS" />
-        <meta name="twitter:description" content="News content from the Tailwind CSS team." />
-        <meta name="twitter:image" content={`https://blog.tailwindcss.com${twitterCard}`} />
-        <meta property="og:url" content="https://blog.tailwindcss.com" />
+        <meta name="twitter:site" content="@lumontec" />
+        <meta name="twitter:creator" content="@lumontec" />
+        <meta name="twitter:title" content="blog.lumontec" />
+        <meta name="twitter:description" content="A dip in my tech trips." />
+        <meta name="twitter:image" content={`https://lumontec.com${lumontec.avatar}`} />
+        <meta property="og:url" content="https://lumontec.com" />
         <meta property="og:type" content="article" />
-        <meta property="og:title" content="Blog – Tailwind CSS" />
-        <meta property="og:description" content="News content from the Tailwind CSS team." />
-        <meta property="og:image" content={`https://blog.tailwindcss.com${twitterCard}`} />
+        <meta property="og:title" content="blog.lumontec" />
+        <meta property="og:description" content="A dip in my tech trips." />
+        <meta property="og:image" content={`https://blog.tailwindcss.com${lumontec.avatar}`} />
         <title>blog.lumontec</title>
-        <meta name="description" content="News content from the Tailwind CSS team." />
+        <meta name="description" content="A dip in my tech trips." />
       </Head>
 
 
 
-      <div className="md:grid md:grid-cols-10 gap-1 items-center pt-10 pb-8 ">
+      <div className="md:grid md:grid-cols-10 gap-1 items-center pb-8 ">
 
         <div className="md:col-start-1 md:col-end-7">
-          <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
+          <h1 className="text-5xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-5xl sm:leading-10 md:text-6xl md:leading-14">
           {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
           </h1>
@@ -43,9 +46,33 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
-          <a href="https://github.com/lumontec">
-            <img src={lumontec.avatar}  className="rounded-full border-2 border-teal-300" />          
+
+
+
+        {/* <div className="items-end justify-end hidden xl:inline-flex xl:col-end-6 xl:col-span-1">
+
+          <a className="w-6 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}>
+            <img src={linkedinLogo} className="opacity-60 hover:opacity-80" />
+          </a>
+
+          <a className="w-9 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}>
+            <img src={githubLogo} className="border-teal-600 opacity-50 hover:opacity-80" />
+          </a>
+
+          <a className="pb-0.5 pr-2.5 w-8 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}>
+            <img src={mediumLogo} className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-70" />
+          </a>
+
+        </div>
+ */}
+
+
+        <div className="transform hover:scale-105 hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
+          <a href={"https://github.com/" + lumontec.github}>
+            <img src={lumontec.avatar}  className="rounded-full border-2 border-gray-400" />          
           </a>
         </div>
         

@@ -8,6 +8,8 @@ import lumontecAvatar from './img/lumontec-gyr.jpg'
 export const lumontec = {
   name: 'Luca Montechiesi',
   github: 'lumontec',
+  linkedin: 'lucamontechiesi',
+  medium: 'lucamontechiesi',
   avatar: lumontecAvatar,
 }
 

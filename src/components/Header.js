@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import mediumLogo from '@/img/medium-logo.png'
+import linkedinLogo from '@/img/linkedin-logo.png'
+import githubLogo from '@/img/github-logo.png'
+import { lumontec } from '@/authors'
 
 function TailwindMark({ className }) {
   return (
@@ -37,20 +41,51 @@ function TailwindLogo({ className }) {
 
 export default function Header() {
   return (
-    <header className="flex justify-between items-center py-10">
+    <header className="flex justify-between items-center py-5">
       <div>
-        <Link href="/">
+        {/* <Link href="/">
           <a aria-label="Tailwind CSS Blog">
-            <TailwindMark className="h-6 sm:hidden" />
+            <TailwindMark className="hidden h-6 sm:hidden" />
             <TailwindLogo className="hidden sm:block h-6" />
           </a>
-        </Link>
+        </Link> */}
       </div>
-      <div className="text-base leading-5">
+
+      {/* <div className="text-base leading-5">
         <a href="https://tailwindcss.com" className="font-medium text-gray-500 hover:text-gray-700">
           Documentation &rarr;
         </a>
-      </div>
+      </div> */}
+
+
+
+        <div className="items-end justify-end hidden sm:inline-flex ">
+
+          <a className="w-9 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}
+            >
+            <img src={githubLogo} className="border-teal-600 opacity-50 hover:opacity-80" />
+          </a>
+
+          <a className="w-6 mr-2 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}
+            >
+            <img src={linkedinLogo} className="opacity-60 hover:opacity-80" />
+          </a>
+
+          <a className="pb-0.5 mr-1 pr-2.5 w-8 transform hover:scale-105"
+            href={"https://github.com/" + lumontec.github}
+            >
+            <img src={mediumLogo} className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-70" />
+          </a>
+
+        </div>
+
+
     </header>
   )
 }
+
+
+
+

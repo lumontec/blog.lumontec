@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 import getAllPostPreviews from '@/getAllPostPreviews'
 import twitterCard from '@/img/twitter-card.jpg'
-import { lumontecava } from '@/authors'
+import { lumontec } from '@/authors'
 
 
 const posts = getAllPostPreviews()
@@ -44,7 +44,7 @@ export default function Home() {
         </div>
 
         <div className="hidden md:inline-flex md:col-end-12 col-span-1">
-          <img src={lumontecava.avatar}  className="rounded-full border-2 border-teal-300" />          
+          <img src={lumontec.avatar}  className="rounded-full border-2 border-teal-300" />          
         </div>
         
 
@@ -56,14 +56,14 @@ export default function Home() {
         {posts.map(({ link, module: { default: Component, meta } }) => {
           return (
             <li key={link} className="py-12">
-              <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
+              <article className="space-y-2 xl:grid xl:grid-cols-7 xl:space-y-0 xl:items-baseline">
                 <dl>
                   <dt className="sr-only">Published on</dt>
                   <dd className="text-base leading-6 font-medium text-gray-500">
                     <time dateTime={meta.date}>{postDateTemplate.render(new Date(meta.date))}</time>
                   </dd>
                 </dl>
-                <div className="space-y-5 xl:col-span-3">
+                <div className="space-y-5 xl:col-span-6">
                   <div className="space-y-6">
                     <h2 className="text-2xl leading-8 font-bold tracking-tight">
                       <Link href={link}>

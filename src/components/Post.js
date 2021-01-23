@@ -19,7 +19,7 @@ const postDateTemplate = tinytime('{dddd}, {MMMM} {DD}, {YYYY}')
 export default function Post({ meta, children, posts }) {
   const router = useRouter()
   const postIndex = posts.findIndex((post) => post.link === router.pathname)
-  const previous = posts[postIndex + 1]
+  var previous = posts[postIndex + 1]
   const next = posts[postIndex - 1]
 
   return (
@@ -55,16 +55,16 @@ export default function Post({ meta, children, posts }) {
         </div>
       </header>
       <div
-        className="divide-y xl:divide-y-0 divide-gray-200 xl:grid xl:grid-cols-4 xl:col-gap-6 pb-16 xl:pb-20"
+        className="divide-y xl:divide-y-0 divide-gray-200 xl:grid xl:grid-cols-6 xl:col-gap-6 pb-16 xl:pb-20"
         style={{ gridTemplateRows: 'auto 1fr' }}
       >
-        <dl className="pt-6 pb-10 xl:pt-11 xl:border-b xl:border-gray-200">
+        <dl className="pt-6 pb-8 xl:pt-11 xl:border-b xl:border-gray-200">
           <dt className="sr-only">Authors</dt>
           <dd>
             <ul className="flex justify-center xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
               {meta.authors.map((author) => (
                 <li key={author.twitter} className="flex items-center space-x-2">
-                  <img src={author.avatar} alt="" className="w-10 h-10 rounded-full" />
+                  <img src={author.avatar} alt="" className="w-10 h-10 rounded-full border-2 border-teal-200" />
                   <dl className="text-sm font-medium leading-5 whitespace-no-wrap">
                     <dt className="sr-only">Name</dt>
                     <dd className="text-gray-900">{author.name}</dd>
@@ -83,7 +83,7 @@ export default function Post({ meta, children, posts }) {
             </ul>
           </dd>
         </dl>
-        <div className="divide-y divide-gray-200 xl:pb-0 xl:col-span-3 xl:row-span-2">
+        <div className="divide-y divide-gray-200 xl:pb-0 xl:col-span-5 xl:row-span-2">
           <div className="prose max-w-none pt-10 pb-8">
             <MDXProvider components={mdxComponents}>{children}</MDXProvider>
           </div>
@@ -100,16 +100,17 @@ export default function Post({ meta, children, posts }) {
         </div>
         <footer className="text-sm font-medium leading-5 divide-y divide-gray-200 xl:col-start-1 xl:row-start-2">
           {(next || previous) && (
-            <div className="space-y-8 py-8">
+            <div className="space-y-4 py-4">
               {next && (
                 <div>
+                  <div>{previous=false}</div>
                   <h2 className="text-xs tracking-wide uppercase text-gray-500">Next Article</h2>
                   <div className="text-teal-500 hover:text-teal-600">
                     <Link href={next.link}>
                       <a>{next.title}</a>
                     </Link>
                   </div>
-                </div>
+                </div>                                
               )}
               {previous && (
                 <div>
@@ -125,7 +126,7 @@ export default function Post({ meta, children, posts }) {
               )}
             </div>
           )}
-          <div className="pt-8">
+          <div className="pt-4">
             <Link href="/">
               <a className="text-teal-500 hover:text-teal-600">&larr; Back to the blog</a>
             </Link>

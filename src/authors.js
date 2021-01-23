@@ -5,7 +5,7 @@ import robinmalfaitAvatar from './img/robinmalfait.jpg'
 import simonswissAvatar from './img/simonswiss.jpg'
 import lumontecAvatar from './img/lumontec-gyr.jpg'
 
-export const lumontecava = {
+export const lumontec = {
   name: 'Luca Montechiesi',
   twitter: '@lumontec',
   avatar: lumontecAvatar,

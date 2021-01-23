@@ -21,11 +21,13 @@ export default function App({ Component, pageProps }) {
       {/* <SectionContainer>
         <Header />
       </SectionContainer> */}
-      <SectionContainer>
-        <main>
-          <Component {...pageProps} />
-        </main>
-      </SectionContainer>
+
+          <SectionContainer>
+            <main>
+              <Component {...pageProps} />
+            </main>
+          </SectionContainer>
+
     </div>
   )
 }

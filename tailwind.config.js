@@ -82,7 +82,7 @@ module.exports = {
               backgroundColor: 'transparent',
               borderColor: theme('colors.gray.200'),
               borderWidth: '1px',
-              fontSize: '13px',
+              fontSize: '13.5px',
               // spacing: '20px'
             },
             blockquote: {

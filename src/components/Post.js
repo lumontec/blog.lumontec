@@ -44,7 +44,7 @@ export default function Post({ meta, children, posts }) {
           <dl className="space-y-10">
             <div>
               <dt className="sr-only">Published on</dt>
-              <dd className="text-base leading-6 font-medium text-gray-500">
+              <dd className="text-base leading-10 font-medium text-gray-500">
                 <time dateTime={meta.date}>{postDateTemplate.render(new Date(meta.date))}</time>
               </dd>
             </div>
@@ -84,7 +84,7 @@ export default function Post({ meta, children, posts }) {
           </dd>
         </dl>
         <div className="divide-y divide-gray-200 xl:pb-0 xl:col-span-5 xl:row-span-2">
-          <div className="prose max-w-none pt-10 pb-8">
+          <div className="text-lg prose max-w-none font-normal text-gray-600 pt-10 pb-8">
             <MDXProvider components={mdxComponents}>{children}</MDXProvider>
           </div>
           {meta.discussion && (

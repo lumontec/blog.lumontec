@@ -65,12 +65,12 @@ export default function Home() {
                 </dl>
                 <div className="space-y-5 xl:col-span-6">
                   <div className="space-y-6">
-                    <h2 className="text-2xl leading-8 font-bold tracking-tight">
+                    <h2 className="text-4xl leading-8 font-normal tracking-medium">
                       <Link href={link}>
-                        <a className="text-gray-900">{meta.title}</a>
+                        <a className="text-gray-600">{meta.title}</a>
                       </Link>
                     </h2>
-                    <div className="prose max-w-none text-gray-500">
+                    <div className="text-lg prose max-w-none font-normal text-gray-600">
                       <Component />
                     </div>
                   </div>

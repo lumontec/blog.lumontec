@@ -42,11 +42,12 @@ module.exports = {
       },
       colors: {
         code: {
-          green: '#b5f4a5',
-          yellow: '#ffe484',
-          purple: '#d9a9ff',
-          red: '#ff8383',
-          blue: '#93ddfd',
+          teal: "#0694a2",
+          green: '#a3be8c',
+          yellow: '#ebcb8b',
+          purple: '#b48ead',
+          red: '#bf616a',
+          blue: '#5e81ac',
           white: '#fff',
         },
       },
@@ -71,14 +72,18 @@ module.exports = {
               backgroundColor: theme('colors.gray.400'),
             },
             code: {
-              color: theme('colors.gray.900'),
+              // color: theme('colors.gray.600'),
             },
             a: {
               color: theme('colors.gray.900'),
             },
             pre: {
-              color: theme('colors.gray.200'),
-              backgroundColor: theme('colors.gray.800'),
+              color: theme('colors.gray.600'),
+              backgroundColor: 'transparent',
+              borderColor: theme('colors.gray.200'),
+              borderWidth: '1px',
+              fontSize: '15px',
+              spacing: '20px'
             },
             blockquote: {
               color: theme('colors.gray.900'),

@@ -5,14 +5,16 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { MDXProvider } from '@mdx-js/react'
 
-export const mdxComponents = {
-  pre: ({ className, ...props }) => (
-    <pre className={`${className} rounded-md bg-gray-800 py-3 px-4 overflow-x-auto`} {...props} />
-  ),
-  'pre.code': ({ className, ...props }) => (
-    <code className={`${className} text-gray-200`} {...props} />
-  ),
-}
+// export const mdxComponents = {
+//   pre: ({ className, ...props }) => (
+//     <pre className={`${className} rounded-md bg-gray-800 py-3 px-4 overflow-x-auto`} {...props} />
+//   ),
+//   'pre.code': ({ className, ...props }) => (
+//     <code className={`${className} text-gray-200`} {...props} />
+//   ),
+// }
+
+
 
 const postDateTemplate = tinytime('{dddd}, {MMMM} {DD}, {YYYY}')
 
@@ -83,9 +85,10 @@ export default function Post({ meta, children, posts }) {
             </ul>
           </dd>
         </dl>
-        <div className="divide-y divide-gray-200 xl:pb-0 xl:col-span-5 xl:row-span-2">
+        <div className="divide-y-gray-200 xl:pb-0 xl:col-span-5 xl:row-span-2">
           <div className="text-lg prose max-w-none font-normal text-gray-600 pt-10 pb-8">
-            <MDXProvider components={mdxComponents}>{children}</MDXProvider>
+            {/* <MDXProvider components={mdxComponents}>{children}</MDXProvider> */}
+            <MDXProvider>{children}</MDXProvider>
           </div>
           {meta.discussion && (
             <div className="pt-6 pb-16">
@@ -105,7 +108,7 @@ export default function Post({ meta, children, posts }) {
                 <div>
                   <div>{previous=false}</div>
                   <h2 className="text-xs tracking-wide uppercase text-gray-500">Next Article</h2>
-                  <div className="text-teal-500 hover:text-teal-600">
+                  <div className="text-normal text-teal-500 hover:text-teal-600">
                     <Link href={next.link}>
                       <a>{next.title}</a>
                     </Link>
@@ -117,7 +120,7 @@ export default function Post({ meta, children, posts }) {
                   <h2 className="text-xs tracking-wide uppercase text-gray-500">
                     Previous Article
                   </h2>
-                  <div className="text-teal-500 hover:text-teal-600">
+                  <div className="text-normal text-teal-500 hover:text-teal-600">
                     <Link href={previous.link}>
                       <a>{previous.title}</a>
                     </Link>

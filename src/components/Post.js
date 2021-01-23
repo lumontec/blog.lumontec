@@ -65,7 +65,7 @@ export default function Post({ meta, children, posts }) {
           <dd>
             <ul className="flex justify-center xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
               {meta.authors.map((author) => (
-                <li key={author.twitter} className="flex items-center space-x-2">
+                <li key={author.github} className="flex items-center space-x-2">
                   <img src={author.avatar} alt="" className="w-10 h-10 rounded-full border-2 border-teal-200" />
                   <dl className="text-sm font-medium leading-5 whitespace-no-wrap">
                     <dt className="sr-only">Name</dt>
@@ -73,10 +73,10 @@ export default function Post({ meta, children, posts }) {
                     <dt className="sr-only">Twitter</dt>
                     <dd>
                       <a
-                        href={`https://twitter.com/${author.twitter}`}
+                        href={`https://github.com/${author.github}`}
                         className="text-teal-500 hover:text-teal-600"
                       >
-                        {author.twitter}
+                        {author.github}
                       </a>
                     </dd>
                   </dl>

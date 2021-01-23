@@ -44,7 +44,9 @@ export default function Home() {
         </div>
 
         <div className="hidden md:inline-flex md:col-end-12 col-span-1">
-          <img src={lumontec.avatar}  className="rounded-full border-2 border-teal-300" />          
+          <a href="https://github.com/lumontec">
+            <img src={lumontec.avatar}  className="rounded-full border-2 border-teal-300" />          
+          </a>
         </div>
         
 

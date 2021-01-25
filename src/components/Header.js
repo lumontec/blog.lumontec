@@ -68,13 +68,13 @@ export default function Header() {
           </a>
 
           <a className="w-6 mr-2 transform hover:scale-105"
-            href={"https://github.com/" + lumontec.github}
+            href={"https://www.linkedin.com/in/" + lumontec.linkedin}
             >
             <img src={linkedinLogo} className="opacity-60 hover:opacity-80" />
           </a>
 
-          <a className="pb-0.5 mr-1 pr-2.5 w-8 transform hover:scale-105"
-            href={"https://github.com/" + lumontec.github}
+          <a className="pb-0.5 mr-1 pr-3 w-8 transform hover:scale-105"
+            href={"https://medium.com/" + lumontec.medium}
             >
             <img src={mediumLogo} className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-70" />
           </a>

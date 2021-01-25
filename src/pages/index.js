@@ -76,9 +76,7 @@ export default function Home() {
           </a>
         </div>
         
-
       </div>
-
 
 
       <ul className="divide-y divide-gray-200">

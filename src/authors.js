@@ -9,7 +9,7 @@ export const lumontec = {
   name: 'Luca Montechiesi',
   github: 'lumontec',
   linkedin: 'lucamontechiesi',
-  medium: 'lucamontechiesi',
+  medium: '@lumontec',
   avatar: lumontecAvatar,
 }
 

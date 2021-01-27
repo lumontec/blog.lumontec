@@ -88,7 +88,7 @@ export default function Post({ meta, children, posts }) {
           </dd>
         </dl>
         <div className="divide-y-gray-200 xl:pb-0 xl:col-span-4 xl:row-span-2">
-          <div className="text-md prose max-w-none font-normal text-gray-600 pt-10 pb-8">
+          <div className="text-md prose max-w-none font-normal text-gray-700 pt-10 pb-8">
             {/* <MDXProvider components={mdxComponents}>{children}</MDXProvider> */}
             <MDXProvider>{children}</MDXProvider>
           </div>

@@ -37,7 +37,7 @@ export default function Home() {
       <div className="md:grid md:grid-cols-10 gap-1 items-center pb-8 ">
 
         <div className="md:col-start-1 md:col-end-7">
-          <h1 className="text-5xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-5xl sm:leading-10 md:text-6xl md:leading-14">
+          <h1 className="text-5xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-5xl sm:leading-10 md:text-5xl md:leading-14">
           {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
           </h1>
@@ -94,10 +94,10 @@ export default function Home() {
                   <div className="space-y-6">
                     <h2 className="text-3xl leading-8 font-normal tracking-medium">
                       <Link href={link}>
-                        <a className="text-gray-600">{meta.title}</a>
+                        <a className="text-gray-700">{meta.title}</a>
                       </Link>
                     </h2>
-                    <div className="text-md prose max-w-none font-normal text-gray-600">
+                    <div className="text-md prose max-w-none font-normal text-gray-700">
                       <Component />
                     </div>
                   </div>

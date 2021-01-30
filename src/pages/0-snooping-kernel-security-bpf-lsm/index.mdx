@@ -2,7 +2,7 @@ import { lumontec } from '@/authors'
 import image from './card.jpg'
 
 export const meta = {
-  title: 'Snooping the linux kernel with lsm bpf hooks',
+  title: 'Snooping the linux kernel with bpf and linux security modules hooks',
   description: `One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
 In this post i leverage libbpf to implement a security tracer [**lsmtrace**](https://github.com/lumontec/lsmtrace) that can be used to snoop inside every executable to gain a deep insight of what is happening on critical kernel structures below the system calls.`,
   date: '2021-01-30T16:35:02.037Z',
@@ -22,7 +22,36 @@ In this post i leverage libbpf to implement a security tracer [**lsmtrace**](htt
 In this post i leverage libbpf to implement a security tracer that can be used to snoop inside every executable to gain a deep insight of what is happening on critical kernel structures below the system calls.
 </p>
 
-By default, Tailwind removes all of the default browser styling from paragraphs, headings, lists and more. This ends up being really useful for building application UIs because you spend less time undoing user-agent styles, but when you _really are_ just trying to style some content that came from a rich-text editor in a CMS or a markdown file, it can be surprising and unintuitive.
+--- 
+
+## Linux security modules framework
+
+Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework to expose a number of hooks that are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
+
+The core concept behind linux security modules floats around 3 concepts:
+* Hooks are invoked as close as possible to the resource being protected to deter against [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) exploits 
+* Hooks are very specific to a class of operations in order to observe some sort of single responsibility principle 
+* Hooks are completely agnostic to their implementation
+
+That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux that (at the time of this post) is the default security module for every single android device available on the market btw.
+
+--- 
+
+## Bpf and libbpf 
+
+Bpf is a quite old technology born with its roots in the packet capture field (tcpdump) but just recently extended to provide developers with the capability to inject custom c code inside the linux kernel without any need to recompile the kernel itself. These bpf programs are able to attach to specific kernel functions like tracepoints or kprobes and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
+
+That seems awasome right ? Too early.
+
+It is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your kernel (and sometimes even correct code) is rejected by one kernel routine called `bpf verifier` that is pickier than
+
+--- 
+
+## Bpf and libbpf 
+
+
+
+
 
 We get lots of complaints about it actually, with people regularly asking us things like:
 

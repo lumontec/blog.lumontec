@@ -1,6 +1,7 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
 import lsm from './lsm.svg'
+import krsi from './krsi.svg'
 
 export const meta = {
   title: 'Some freshness with Linux security modules and ebpf',
@@ -60,13 +61,19 @@ Libbpf is a library that aims to simplify the deployment of bpf programs by offe
 
 ## eBPF + LSM = KRSI freshness 
 
-Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies that can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. This gets interesting for a couple of reasons:
+Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies that can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. 
+KRSI stands for Kernel Runtime Security Instrumentation and the target of this patch is to allow users to implement lsm hooks by utilizing bpf compiled code.
+This gets interesting for a couple of reasons:
 * *Kernel function call flow mutation*: AFAIK this is the very first application of ebpf where injected code is actually capable reject / blocking the execution of some kernel logic
 * *Flexibility*: ebpf can be attached / removed on the fly offering fast replacement of vulerable security code   
 
 This is a quite huge advancement that hasn't come without strong [debate](https://lwn.net/Articles/813261/) about performance and critycism with the main point being the following:  
 **Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required for this. Time will tell.. 
 
+<img
+  class="p-5 border border-gray-200 rounded-md"
+  src={krsi} 
+/>
 
 --- 
 
@@ -76,37 +83,38 @@ Ok so in this final section I want to provide a high level view of the linux ker
 
 ### Syscalls and Kernel resources 
 
-In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** and the only possible way that users have to access and utilize their share of os resources. Right before these resources we have the lsm hooks protecting them.
+In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** and the only possible way that users have to access and utilize their share of os resources. Right in front of these we have the lsm hooks aiming to protecting them.
 
-### Userspace vs kernelspace mac 
+### Userspace vs kernelspace enforcement
+
+There is a whole family of tools that implement security enforcement by restricting syscalls, which makes a whole lot of sense at first sight:
+
+> If users trigger syscalls to interact with kernel state why not restrict those actions directly ?
+
+This is exactly what tools like *seccomp* or *systrace* do in the first place. Seccomp (which stands for secure computing) is a kernel facility that enables a process to auto restrict its access to syscalls, and was extended to support bpf injection in what is currently known as **seccomp-bpf**. 
+With seccomp-bpf is possible to attach bpf programs to syscalls in order to reject or pass them (quite similar to krsi right ?) which is awasome, moreover it is nicely wrapped by *libseccomp* library, the same library extesively used by **runc** in order to allow enforcement for its open-container-initiative runtime security. If you are asking yourself, yes, this is the mainmechanism behind those *CAPABILITIES* that describe container security profiles both in docker and kubernetes environments.  
+So what's the problem with this approach ?  
+The problem is that enforcement is performed very far from the kernel resources being protected, and relying on userspace data (e.g. the paths passed to syscalls) exposes us to a whole family of subtle security exploits where this information can be manipulated after the checks have been done (I won't enter those details here).  
+So maybe you are asking yourselves:  
+
+> Then what kind of information can I use inside my seccomp-bpf code ?
+
+And the answer is: everything which is not passed as a pointer argument to syscalls. 
+Thus formulating complex policies with seccomp-bpf is virtually impossible, as I cannot have access to very basic information such as:
+* the name of the executable
+* some path i am passing to my syscall
+
+Add to that the fact that syscalls are contantly evolving, now you should have a quite clear idea on why lsm hooks were introduced. 
+They offered the capabilty to implement very sophisticated security policies straight inside the linux kernel. The only problem being that every time a fix was required, a whole kernel recompilation was required.  
+This is not the case anymore with krsi, that makes the whole developement/deployment cycle far easier to implement.
+
+--- 
+
+## Wrapping the roll 
+
+Writing an deployng flexible security code has never been so easy, I expect to see a number of different solutions grow building their foundation on KRSI and bpf.  
+Deep lsm observability becomes another quit crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracer**]() to provide an high level view of what a specific process is doing at the hooks level.  
+That is juice for my next post. 
 
 
-We get lots of complaints about it actually, with people regularly asking us things like:
-
-> Why is Tailwind removing the default styles on my `h1` elements? How do I disable this? What do you mean I lose all the other base styles too?
-
-We hear you, but we're not convinced that simply disabling our base styles is what you really want. You don't want to have to remove annoying margins every time you use a `p` element in a piece of your dashboard UI. And I doubt you really want your blog posts to use the user-agent styles either — you want them to look _awesome_, not awful.
-
-That's why today we're excited to release [`@tailwindcss/typography`](https://github.com/tailwindcss/typography) — a plugin that gives you what you _actually_ want, without any of the downside of doing something stupid like disabling our base styles.
-
-It adds a new set of `prose` classes that you can slap on any block of vanilla HTML content and turn it into a beautiful, well-formatted document:
-
-```html
-<article class="prose lg:prose-xl">
-  <h1>Garlic bread with cheese: What the science tells us</h1>
-  <p>
-    For years parents have espoused the health benefits of eating garlic bread with cheese to their
-    children, with the food earning such an iconic status in our culture that kids will often dress
-    up as warm, cheesy loaf for Halloween.
-  </p>
-  <p>
-    But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases
-    springing up around the country.
-  </p>
-  <!-- ... -->
-</article>
-```
-
-So how does it actually look? Well you're looking at it right now — we use it to style the content on this very blog!
-
-[**Check out the documentation**](https://github.com/tailwindcss/typography) to learn more and try it out today.
+[**Comment this on medium**](https://github.com/tailwindcss/typography) to learn more and try it out today.

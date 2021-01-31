@@ -1,0 +1,112 @@
+import { lumontec } from '@/authors'
+import image from './card.jpg'
+import lsm from './lsm.svg'
+
+export const meta = {
+  title: 'Some freshness with Linux security modules and ebpf',
+  description: `One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools`,
+  date: '2021-01-30T16:35:02.037Z',
+  authors: [lumontec],
+  image,
+  discussion: 'https://github.com/lumontec/lsmtrace',
+}
+
+<!--excerpt-->
+
+One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+
+This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools`
+<!--/excerpt-->
+
+<p className="lead">
+One of the shiny new features available in the linux kernel since version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools`
+</p>
+
+--- 
+
+## Linux security modules framework
+
+Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework to expose a number of hooks that are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
+
+The core concept behind linux security modules floats around 3 concepts:
+* *Localtiy*: Hooks are invoked as close as possible to the resource being protected to deter against [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) exploits 
+* *Single reposnibility*: Hooks offer protection for very specific classes of operations
+* *Agnostic*: Hooks are simple function declarations that security engineers use to define their own implementation of security modules
+
+That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux that (at the time of this post) is the default security module for every single android device available on the market btw.
+
+<img 
+  class="p-5 border border-gray-200 rounded-md"
+  src={lsm} 
+  alt="Linux Security Modules" 
+/>
+
+--- 
+
+## eBPF and libbpf 
+
+Bpf is a quite old technology born with its roots in the packet capture field (close to tcpdump) but just recently extended to provide developers with the capability to inject custom code inside the linux kernel without any need to recompile the kernel itself. These bpf programs are able to attach to specific kernel functions like tracepoints or kprobes and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
+
+That's awasome ! Almost.. 
+
+I mean it is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your os (and sometimes even correct code) is rejected by one mythological kernel routine called `the bpf verifier` that is pickier than your girlfriend in the wrong day. But that is not all. 
+The linux kernel is constantly evolving by changing and moving its internal structures along with different versions, then how do I write code that is actually portable between these ? 
+
+Libbpf is a library that aims to simplify the deployment of bpf programs by offering a number of helper functions useful to access internal kernel information by means of a stable view of these structures. A functionalty called CO-RE (compile once run everywhere) magically hides from user a quantity of pointer chasing and field relocation logic, allowing us to happily access **with some limitations** a stable view of kernel information across different machines. 
+
+--- 
+
+## eBPF + LSM = KRSI freshness 
+
+Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies that can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. This gets interesting for a couple of reasons:
+* *Kernel function call flow mutation*: AFAIK this is the very first application of ebpf where injected code is actually capable reject / blocking the execution of some kernel logic
+* *Flexibility*: ebpf can be attached / removed on the fly offering fast replacement of vulerable security code   
+
+This is a quite huge advancement that hasn't come without strong [debate](https://lwn.net/Articles/813261/) about performance and critycism with the main point being the following:  
+**Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required for this. Time will tell.. 
+
+
+--- 
+
+## KRSI and other fantastic beasts
+
+Ok so in this final section I want to provide a high level view of the linux kernel and MAC solutions and help you and myself out in understanding where krsi is sitting and what it can replace/improve in this rich landscape. 
+
+### Syscalls and Kernel resources 
+
+In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** and the only possible way that users have to access and utilize their share of os resources. Right before these resources we have the lsm hooks protecting them.
+
+### Userspace vs kernelspace mac 
+
+
+We get lots of complaints about it actually, with people regularly asking us things like:
+
+> Why is Tailwind removing the default styles on my `h1` elements? How do I disable this? What do you mean I lose all the other base styles too?
+
+We hear you, but we're not convinced that simply disabling our base styles is what you really want. You don't want to have to remove annoying margins every time you use a `p` element in a piece of your dashboard UI. And I doubt you really want your blog posts to use the user-agent styles either — you want them to look _awesome_, not awful.
+
+That's why today we're excited to release [`@tailwindcss/typography`](https://github.com/tailwindcss/typography) — a plugin that gives you what you _actually_ want, without any of the downside of doing something stupid like disabling our base styles.
+
+It adds a new set of `prose` classes that you can slap on any block of vanilla HTML content and turn it into a beautiful, well-formatted document:
+
+```html
+<article class="prose lg:prose-xl">
+  <h1>Garlic bread with cheese: What the science tells us</h1>
+  <p>
+    For years parents have espoused the health benefits of eating garlic bread with cheese to their
+    children, with the food earning such an iconic status in our culture that kids will often dress
+    up as warm, cheesy loaf for Halloween.
+  </p>
+  <p>
+    But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases
+    springing up around the country.
+  </p>
+  <!-- ... -->
+</article>
+```
+
+So how does it actually look? Well you're looking at it right now — we use it to style the content on this very blog!
+
+[**Check out the documentation**](https://github.com/tailwindcss/typography) to learn more and try it out today.

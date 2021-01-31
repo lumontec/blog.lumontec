@@ -37,21 +37,20 @@ That third point in particular is quite important because it frees the linux ker
 
 --- 
 
-## Bpf and libbpf 
+## eBPF and libbpf 
 
-Bpf is a quite old technology born with its roots in the packet capture field (tcpdump) but just recently extended to provide developers with the capability to inject custom c code inside the linux kernel without any need to recompile the kernel itself. These bpf programs are able to attach to specific kernel functions like tracepoints or kprobes and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
+Bpf is a quite old technology born with its roots in the packet capture field (close to tcpdump) but just recently extended to provide developers with the capability to inject custom code inside the linux kernel without any need to recompile the kernel itself. These bpf programs are able to attach to specific kernel functions like tracepoints or kprobes and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
 
-That seems awasome right ? Too early.
+That's awasome ! Almost.. 
 
-It is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your kernel (and sometimes even correct code) is rejected by one kernel routine called `bpf verifier` that is pickier than
+I mean it is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your os (and sometimes even correct code) is rejected by one mythological kernel routine called `the bpf verifier` that is pickier than your girlfriend in the wrong day. But that is not all. 
+The linux kernel is constantly evolving by changing and moving its internal structures along with different versions, then how do I write code that is actually portable between these ? 
+
+Libbpf is a library that aims to simplify the deployment of bpf programs by offering a number of helper functions useful to access internal kernel information by means of a stable view of these structures. A functionalty called CO-RE (compile once run everywhere) magically hides from user a quantity of pointer chasing and field relocation logic, allowing us to happily access **with some limitations** a stable view of kernel information across different machines. 
 
 --- 
 
-## Bpf and libbpf 
-
-
-
-
+## eBPF + LSM = BPF_LSM
 
 We get lots of complaints about it actually, with people regularly asking us things like:
 

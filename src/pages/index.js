@@ -8,7 +8,6 @@ import linkedinLogo from '@/img/linkedin-logo.png'
 import githubLogo from '@/img/github-logo.png'
 import { lumontec } from '@/authors'
 
-
 const posts = getAllPostPreviews()
 
 const postDateTemplate = tinytime('{MMMM} {DD}, {YYYY}')
@@ -32,22 +31,14 @@ export default function Home() {
         <meta name="description" content="A dip in my tech trips." />
       </Head>
 
-
-
       <div className="md:grid md:grid-cols-10 gap-1 items-center pb-8 ">
-
         <div className="md:col-start-1 md:col-end-7">
-          <h1 className="text-5xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-5xl sm:leading-10 md:text-5xl md:leading-14">
-          {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
+          <h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-5xl md:leading-14">
+            {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
           </h1>
-          <p className="text-xl pt-5 leading-9 text-gray-500">
-            A dip in my tech trips ↵
-          </p>
+          <p className="text-xl pt-3 leading-9 text-gray-500">A dip in my tech trips ↵</p>
         </div>
-
-
-
 
         {/* <div className="items-end justify-end hidden xl:inline-flex xl:col-end-6 xl:col-span-1">
 
@@ -69,15 +60,12 @@ export default function Home() {
         </div>
  */}
 
-
         <div className="transform hover:scale-105 hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
-          <a href={"https://github.com/" + lumontec.github}>
-            <img src={lumontec.avatar}  className="rounded-full border-2 border-gray-400" />          
+          <a href={'https://github.com/' + lumontec.github}>
+            <img src={lumontec.avatar} className="rounded-full border-2 border-gray-400" />
           </a>
         </div>
-        
       </div>
-
 
       <ul className="divide-y divide-gray-200">
         {posts.map(({ link, module: { default: Component, meta } }) => {
@@ -91,8 +79,8 @@ export default function Home() {
                   </dd>
                 </dl>
                 <div className="space-y-5 xl:col-span-4">
-                  <div className="space-y-6">
-                    <h2 className="text-3xl leading-8 font-normal tracking-medium">
+                  <div className="space-y-4">
+                    <h2 className="text-2xl leading-8 font-normal tracking-medium">
                       <Link href={link}>
                         <a className="text-gray-700">{meta.title}</a>
                       </Link>
@@ -101,7 +89,7 @@ export default function Home() {
                       <Component />
                     </div>
                   </div>
-                  <div className="text-base leading-6 font-medium">
+                  <div className="text-base leading-4 font-medium">
                     <Link href={link}>
                       <a
                         className="text-teal-500 hover:text-teal-600"

@@ -20,24 +20,24 @@ export default function Home() {
         <meta name="twitter:site" content="@lumontec" />
         <meta name="twitter:creator" content="@lumontec" />
         <meta name="twitter:title" content="blog.lumontec" />
-        <meta name="twitter:description" content="A dip in my tech trips." />
+        <meta name="twitter:description" content="dips in my tech trips." />
         <meta name="twitter:image" content={`https://lumontec.com${lumontec.avatar}`} />
         <meta property="og:url" content="https://lumontec.com" />
         <meta property="og:type" content="article" />
         <meta property="og:title" content="blog.lumontec" />
-        <meta property="og:description" content="A dip in my tech trips." />
+        <meta property="og:description" content="dips in my tech trips." />
         <meta property="og:image" content={`https://blog.tailwindcss.com${lumontec.avatar}`} />
         <title>blog.lumontec</title>
-        <meta name="description" content="A dip in my tech trips." />
+        <meta name="description" content="dips in my tech trips." />
       </Head>
 
       <div className="md:grid md:grid-cols-10 gap-1 items-center pb-8 ">
         <div className="md:col-start-1 md:col-end-7">
-          <h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-5xl md:leading-14">
+          <h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-4xl md:leading-14">
             {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
           </h1>
-          <p className="text-xl pt-3 leading-9 text-gray-500">A dip in my tech trips ↵</p>
+          <p className="text-xl pt-1 leading-9 text-gray-500">dips in my tech trips ↵</p>
         </div>
 
         {/* <div className="items-end justify-end hidden xl:inline-flex xl:col-end-6 xl:col-span-1">

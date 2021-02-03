@@ -62,13 +62,13 @@ module.exports = {
           css: {
             color: theme('colors.gray.700'),
             h2: {
-              fontWeight: '500',
+              fontWeight: '400',
               letterSpacing: theme('letterSpacing.tight'),
-              color: theme('colors.gray.600'),
+              color: theme('colors.gray.800'),
             },
             h3: {
               fontWeight: '400',
-              color: theme('colors.gray.600'),
+              color: theme('colors.gray.800'),
             },
             'ol li:before': {
               fontWeight: '600',

@@ -39,8 +39,8 @@ export default function Post({ meta, children, posts }) {
         <meta property="og:image" content={`https://blog.lumontec.com${meta.image}`} />
         <meta name="description" content={meta.description}></meta>
       </Head>
-      <header className="pt-4 xl:pb-10">
-        <div className="space-y-1 text-center">
+      <header className="pt-4 xl:pb-10   xl:grid xl:grid-cols-6 xl:col-gap-6  ">
+        <div className="space-y-1 text-start  xl:col-start-2  xl:col-span-4">
           <dl className="space-y-10">
             <div>
               <dt className="sr-only">Published on</dt>

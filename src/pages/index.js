@@ -60,7 +60,7 @@ export default function Home() {
         </div>
  */}
 
-        <div className="transform hover:scale-105 hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
+        <div className="transform hover:scale-95 scale-90 hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
           <a href={'https://github.com/' + lumontec.github}>
             <img src={lumontec.avatar} className="rounded-full border-2 border-gray-400" />
           </a>

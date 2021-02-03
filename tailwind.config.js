@@ -9,7 +9,7 @@ module.exports = {
       extractors: [
         {
           extensions: ['mdx'],
-          extractor: (content) => {
+          extractor: content => {
             content = mdx.sync(content)
 
             // Capture as liberally as possible, including things like `h-(screen-1.5)`
@@ -26,7 +26,6 @@ module.exports = {
     },
   },
   theme: {
-    
     extend: {
       spacing: {
         '9/16': '56.25%',
@@ -38,11 +37,18 @@ module.exports = {
         '14': '3.5rem',
       },
       fontFamily: {
-        sans: [ 'Maven Pro', 'system-ui', 'Poppins', 'Roboto', 'Inter var', ...defaultTheme.fontFamily.sans],
+        sans: [
+          'Maven Pro',
+          'system-ui',
+          'Poppins',
+          'Roboto',
+          'Inter var',
+          ...defaultTheme.fontFamily.sans,
+        ],
       },
       colors: {
         code: {
-          teal: "#0694a2",
+          teal: '#0694a2',
           green: '#a3be8c',
           yellow: '#ebcb8b',
           purple: '#b48ead',
@@ -51,18 +57,18 @@ module.exports = {
           white: '#fff',
         },
       },
-      typography: (theme) => ({
+      typography: theme => ({
         default: {
           css: {
             color: theme('colors.gray.700'),
             h2: {
               fontWeight: '500',
               letterSpacing: theme('letterSpacing.tight'),
-              color: theme('colors.gray.900'),
+              color: theme('colors.gray.600'),
             },
             h3: {
               fontWeight: '400',
-              color: theme('colors.gray.900'),
+              color: theme('colors.gray.600'),
             },
             'ol li:before': {
               fontWeight: '600',
@@ -98,7 +104,7 @@ module.exports = {
   plugins: [
     require('@tailwindcss/ui'),
     require('@tailwindcss/typography'),
-    function ({ addBase, addComponents, theme }) {
+    function({ addBase, addComponents, theme }) {
       addBase([
         {
           '@font-face': {

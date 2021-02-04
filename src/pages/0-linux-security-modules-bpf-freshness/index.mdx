@@ -5,8 +5,8 @@ import krsi from './krsi.svg'
 
 export const meta = {
   title: 'Some freshness with Linux security modules and ebpf',
-  description: `One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools`,
+  description: `One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security`,
   date: '2021-01-30T16:35:02.037Z',
   authors: [lumontec],
   image,
@@ -15,28 +15,28 @@ This opens up a whole class of fresh solutions that I want to geolocalize inside
 
 <!--excerpt-->
 
-One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools
+One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security
 
 <!--/excerpt-->
 
 <p className="prose-lg">
-One of the shiny new features available in the linux kernel since version 5.7 is the capability of attaching ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocalize inside of the rich landscape of kernel security tools
+One of the shiny new features available in the linux kernel since <a href="https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/"><strong>this patch</strong></a> on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
+This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security
 </p>
 
 --- 
 
 ## Linux security modules framework
 
-Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework to expose a number of hooks that are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
+Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework exposing a number of hooks which are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
 
-The core concept behind linux security modules floats around 3 concepts:
-* *Localtiy*: Hooks are invoked as close as possible to the resource being protected to deter against [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) exploits 
+The architecture of linux security modules is based on 3 main concepts:
+* *Locality*: Hooks are invoked as close as possible to the resource being protected to deter against [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) exploits 
 * *Single reposnibility*: Hooks offer protection for very specific classes of operations
 * *Agnostic*: Hooks are simple function declarations that security engineers use to define their own implementation of security modules
 
-That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux that (at the time of this post) is the default security module for every single android device available on the market btw.
+That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.
 
 
 <img
@@ -48,27 +48,27 @@ That third point in particular is quite important because it frees the linux ker
 
 ## eBPF and libbpf 
 
-Bpf is a quite old technology born with its roots in the packet capture field (close to tcpdump) but just recently extended to provide developers with the capability to inject custom code inside the linux kernel without any need to recompile the kernel itself. These bpf programs are able to attach to specific kernel functions like tracepoints or kprobes and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
+Bpf is a quite old technology born with its roots in the packet capture field (close to tcpdump) but just recently extended to provide developers with the capability to inject custom code inside the linux kernel without any need to recompile the kernel itself. These bpf programs can be attached to specific kernel facilities like *tracepoints* or *kprobes* and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
 
-That's awasome ! Almost.. 
+And that's *almost* awasome..
 
-I mean it is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your os (and sometimes even correct code) is rejected by one mythological kernel routine called `the bpf verifier` that is pickier than your girlfriend in the wrong day. But that is not all. 
-The linux kernel is constantly evolving by changing and moving its internal structures along with different versions, then how do I write code that is actually portable between these ? 
+I mean it is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your os (and sometimes even straight correct code) is rejected by one mythological kernel routine called `the bpf verifier` that is pickier than your girlfriend in the wrong day. But that is not all. 
+The linux kernel is constantly evolving by changing and moving its internal structures as versions change, then how do I write code that is actually portable between these ? 
 
-Libbpf is a library that aims to simplify the deployment of bpf programs by offering a number of helper functions useful to access internal kernel information by means of a stable view of these structures. A functionalty called CO-RE (compile once run everywhere) magically hides from user a quantity of pointer chasing and field relocation logic, allowing us to happily access **with some limitations** a stable view of kernel information across different machines. 
+Libbpf is a library that aims to simplify the deployment of bpf programs by offering a number of helper functions useful to access internal kernel information providing a stable view of these structures. A functionalty called CO-RE (compile once run everywhere) magically hides from user a quantity of pointer chasing and field relocation logic, allowing us to happily access **with some limitations** a stable view of kernel information across different machines. 
 
 --- 
 
 ## eBPF + LSM = KRSI freshness 
 
-Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies that can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. 
+Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies which can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. 
 KRSI stands for Kernel Runtime Security Instrumentation and the target of this patch is to allow users to implement lsm hooks by utilizing bpf compiled code.
 This gets interesting for a couple of reasons:
 * *Kernel function call flow mutation*: AFAIK this is the very first application of ebpf where injected code is actually capable reject / blocking the execution of some kernel logic
 * *Flexibility*: ebpf can be attached / removed on the fly offering fast replacement of vulerable security code   
 
 This is a quite huge advancement that hasn't come without strong [debate](https://lwn.net/Articles/813261/) about performance and critycism with the main point being the following:  
-**Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required for this. Time will tell.. 
+**Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs with respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required in order to reliably build something trustable. Time will tell.. 
 
 <img
   class="p-5 border border-gray-200 rounded-md"
@@ -83,18 +83,18 @@ Ok so in this final section I want to provide a high level view of the linux ker
 
 ### Syscalls and Kernel resources 
 
-In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** and the only possible way that users have to access and utilize their share of os resources. Right in front of these we have the lsm hooks aiming to protecting them.
+In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** seen by users and the only possible way that they have to access and claim their share of os resources. Right in front of these we have the lsm hooks enforcing protection logic. 
 
 ### Userspace vs kernelspace enforcement
 
 There is a whole family of tools that implement security enforcement by restricting syscalls, which makes a whole lot of sense at first sight:
 
-> If users trigger syscalls to interact with kernel state why not restrict those actions directly ?
+> If users trigger syscalls to interact with kernel state why not restricting those actions directly ?
 
 This is exactly what tools like *seccomp* or *systrace* do in the first place. Seccomp (which stands for secure computing) is a kernel facility that enables a process to auto restrict its access to syscalls, and was extended to support bpf injection in what is currently known as **seccomp-bpf**. 
-With seccomp-bpf is possible to attach bpf programs to syscalls in order to reject or pass them (quite similar to krsi right ?) which is awasome, moreover it is nicely wrapped by *libseccomp* library, the same library extesively used by **runc** in order to allow enforcement for its open-container-initiative runtime security. If you are asking yourself, yes, this is the mainmechanism behind those *CAPABILITIES* that describe container security profiles both in docker and kubernetes environments.  
+With seccomp-bpf is possible to attach bpf programs to syscalls in order to reject or pass them (quite similar to krsi right ?) which is awasome, moreover it is nicely wrapped by *libseccomp* library, the same library extesively used by **runc** in order to allow enforcement for its open-container-initiative runtime security. If you are asking yourself, yes, this is the mainmechanism behind those container *security profiles* that implement syscall access restriction both in [docker](https://docs.docker.com/engine/security/seccomp/) and [kubernetes](https://kubernetes.io/docs/tutorials/clusters/seccomp/) environments.  
 So what's the problem with this approach ?  
-The problem is that enforcement is performed very far from the kernel resources being protected, and relying on userspace data (e.g. the paths passed to syscalls) exposes us to a whole family of subtle security exploits where this information can be manipulated after the checks have been done (I won't enter those details here).  
+The problem is that enforcement is performed very far from the kernel resources being protected, and relying on userspace data (e.g. paths or strings passed syscall arguments) exposes us to a whole family of subtle security exploits where this information can be manipulated after the checks have been done by exploiting race conditions (I won't enter those details here).  
 So maybe you are asking yourselves:  
 
 > Then what kind of information can I use inside my seccomp-bpf code ?
@@ -105,16 +105,28 @@ Thus formulating complex policies with seccomp-bpf is virtually impossible, as I
 * some path i am passing to my syscall
 
 Add to that the fact that syscalls are contantly evolving, now you should have a quite clear idea on why lsm hooks were introduced. 
-They offered the capabilty to implement very sophisticated security policies straight inside the linux kernel. The only problem being that every time a fix was required, a whole kernel recompilation was required.  
-This is not the case anymore with krsi, that makes the whole developement/deployment cycle far easier to implement.
+They offered the capabilty to implement very sophisticated security policies deep inside the linux kernel. The only problem being that every time a fix was required, a whole kernel recompilation was required. This rigidity concerning deployment is the main reason why security modules such as SELinux and AppArmor ended up being include straight in the kernel tree, event thought this wasn't likely the idea when LSM framework was conceived.  
+BUT this is not the case anymore with krsi, that makes the whole developement/deployment cycle far easier to implement without even restarting the machine.
+
+--- 
+
+## Requirements
+
+> Ok, but tell me what I need to play with this stuff
+
+You need a linux kernel > 5.7 compiled with the following options:
+- BPF_SYSCALL 
+- DEBUG_INFO
+- DEBUG_INFO_BTF  
+- **BPF_LSM**
+
+Being an extremely fresh feature, no os that I know of ships with option BPF_LSM enabled by default, yet all these will likely be enabled in the future. Ubuntu upstream kernel for example already includes in its version 5.10.0 the first three options and is likely to enable the last one [quite soon](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1905975). 
 
 --- 
 
 ## Wrapping the roll 
 
 Writing an deployng flexible security code has never been so easy, I expect to see a number of different solutions grow building their foundation on KRSI and bpf.  
-Deep lsm observability becomes another quit crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracer**]() to provide an high level view of what a specific process is doing at the hooks level.  
+Deep lsm observability will likely become another quite crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracer**]() to provide an high level view of what a specific process is doing at the hooks level.  
 That is juice for my next post. 
 
-
-[**Comment this on medium**](https://github.com/tailwindcss/typography) to learn more and try it out today.

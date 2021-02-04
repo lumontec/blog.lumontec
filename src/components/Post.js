@@ -61,7 +61,7 @@ export default function Post({ meta, children, posts }) {
         <dl className="pt-6 pb-8 xl:pt-11 xl:border-b xl:border-gray-200">
           <dt className="sr-only">Authors</dt>
           <dd>
-            <ul className="flex justify-center xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
+            <ul className="flex justify-start xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
               {meta.authors.map(author => (
                 <li key={author.github} className="flex items-center space-x-2">
                   <a href={'https://github.com/' + author.github}>
@@ -99,7 +99,7 @@ export default function Post({ meta, children, posts }) {
               <p>
                 Want to talk about this post?{' '}
                 <a href={meta.discussion} className="font-medium text-teal-500 hover:text-teal-600">
-                  Discuss this on GitHub &rarr;
+                  Discuss this on Medium &rarr;
                 </a>
               </p>
             </div>

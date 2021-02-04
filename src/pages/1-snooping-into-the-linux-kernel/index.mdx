@@ -4,30 +4,57 @@ import lsm from './lsm.svg'
 import krsi from './krsi.svg'
 
 export const meta = {
-  title: 'Some freshness with Linux security modules and ebpf',
-  description: `One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security`,
-  date: '2021-01-30T16:35:02.037Z',
+  title: 'Building a security tracing utility to snoop into the linux kernel',
+  description: `The story of how I built lsmtrace, a linux security modules introspection utility. A quick example demonstrating how it's possible to take a swim at the bottom of the linux kernel to observe security events triggered by a specific process. Leveraging krsi and ebpf this gets as easy as writing a simple c application. Almost.. `,
+  date: '2021-02-04T19:35:02.037Z',
   authors: [lumontec],
   image,
   discussion: 'https://github.com/lumontec/lsmtrace',
 }
 
 <!--excerpt-->
-
-One of the shiny new features available in the linux kernel since [this patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/) on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security
+The story of how I built **[lsmtrace](https://github.com/lumontec/lsmtrace)**, a linux security modules introspection utility.
+A quick example demonstrating how it's possible to take a swim at the bottom of the linux kernel to observe security events triggered by a specific process. Leveraging [krsi](https://lwn.net/Articles/798157/) and [ebpf](https://ebpf.io/) this gets as easy as writing a simple c application. Almost..
 
 <!--/excerpt-->
 
 <p className="prose-lg">
-One of the shiny new features available in the linux kernel since <a href="https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/"><strong>this patch</strong></a> on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
-This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security
+The story of how I built <a href="https://github.com/lumontec/lsmtrace"><strong>lsmtrace</strong></a>, a linux security modules introspection utility.
+A quick example demonstrating how it's possible to take a swim at the bottom of the linux kernel to observe security events triggered by a specific process. Leveraging <a href="https://lwn.net/Articles/798157/"><strong>krsi</strong></a>  and <a href="https://ebpf.io/"><strong>ebpf</strong></a> this gets as easy as writing a simple c application.  
+Almost..
 </p>
 
 --- 
 
-## Linux security modules framework
+## Quest
+
+During my usual quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://it.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). I must assume that you have at least a basic idea of how these two techs work, if it's not the case just jump to my previous post.  
+Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel is pretty much **non-existent**.  
+Veeery well.. we are in for some true fun.   
+I immediately came to the conclusion that the best way to studying those hooks was indeed to build some code for tracing them, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
+
+> The idea of lsmtrace is to dump every hook triggered by a specific executable along with a meaningful view of the hook arguments
+
+--- 
+
+## Architecture
+
+
+
+## Implementation details
+
+### Complexities
+
+### Quirks
+
+## Let`s have some fun
+
+## Some brainfood
+
+Other tools are present, bpftrace ...
+If you want to develop the sanbox
+
+
 
 Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework exposing a number of hooks which are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
 
@@ -127,6 +154,6 @@ Being an extremely fresh feature, no os that I know of ships with option BPF_LSM
 ## Wrapping the spring roll 
 
 Writing an deployng flexible security code has never been so easy, I expect to see a number of different solutions grow building their foundation on KRSI and bpf.  
-Deep lsm observability will likely become another quite crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracing utility**](https://github.com/lumontec/lsmtrace) to provide an high level view of what a specific process is doing at the hooks level.  
+Deep lsm observability will likely become another quite crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracer**](https://github.com/lumontec/lsmtrace) to provide an high level view of what a specific process is doing at the hooks level.  
 That is juice for my next post. 
 

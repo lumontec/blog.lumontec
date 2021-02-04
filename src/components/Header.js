@@ -1,7 +1,8 @@
-import Link from 'next/link'
+//import Link from 'next/link'
 import mediumLogo from '@/img/medium-logo.png'
 import linkedinLogo from '@/img/linkedin-logo.png'
 import githubLogo from '@/img/github-logo.png'
+import twitterLogo from '@/img/twitter-logo.png'
 import { lumontec } from '@/authors'
 
 function TailwindMark({ className }) {
@@ -57,35 +58,34 @@ export default function Header() {
         </a>
       </div> */}
 
+      <div className="items-end justify-end hidden sm:inline-flex ">
+        <a
+          className="mr-1 transform hover:scale-105"
+          href={'https://github.com/' + lumontec.github}
+        >
+          <img
+            src={twitterLogo}
+            className="rounded-full h-5 w-5 border border-gray-900 opacity-75 hover:opacity-100"
+          />
+        </a>
 
+        <a
+          className="w-6 mr-2 pb-0 transform hover:scale-105"
+          href={'https://www.linkedin.com/in/' + lumontec.linkedin}
+        >
+          <img src={linkedinLogo} className="opacity-50 hover:opacity-100" />
+        </a>
 
-        <div className="items-end justify-end hidden sm:inline-flex ">
-
-          <a className="w-9 transform hover:scale-105"
-            href={"https://github.com/" + lumontec.github}
-            >
-            <img src={githubLogo} className="border-teal-600 opacity-50 hover:opacity-80" />
-          </a>
-
-          <a className="w-6 mr-2 transform hover:scale-105"
-            href={"https://www.linkedin.com/in/" + lumontec.linkedin}
-            >
-            <img src={linkedinLogo} className="opacity-60 hover:opacity-80" />
-          </a>
-
-          <a className="pb-0.5 mr-1 pr-3 w-8 transform hover:scale-105"
-            href={"https://medium.com/" + lumontec.medium}
-            >
-            <img src={mediumLogo} className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-70" />
-          </a>
-
-        </div>
-
-
+        <a
+          className="w-8 mr-1 pr-3 pb-0.5 transform hover:scale-105"
+          href={'https://medium.com/' + lumontec.medium}
+        >
+          <img
+            src={mediumLogo}
+            className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-100"
+          />
+        </a>
+      </div>
     </header>
   )
 }
-
-
-
-

@@ -61,7 +61,7 @@ export default function Header() {
       <div className="items-end justify-end hidden sm:inline-flex ">
         <a
           className="mr-1 transform hover:scale-105"
-          href={'https://github.com/' + lumontec.github}
+          href={'https://twitter.com/' + lumontec.twitter}
         >
           <img
             src={twitterLogo}

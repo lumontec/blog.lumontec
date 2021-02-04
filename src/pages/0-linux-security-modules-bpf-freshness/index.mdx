@@ -1,7 +1,7 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
-import lsm from './lsm.svg'
-import krsi from './krsi.svg'
+import lsm from './0_lsm.png'
+import krsi from './0_krsi.png'
 
 export const meta = {
   title: 'Some freshness with Linux security modules and ebpf',
@@ -40,7 +40,7 @@ That third point in particular is quite important because it frees the linux ker
 
 
 <img
-  class="p-5 border border-gray-200 rounded-md"
+  class="crisp p-5 border border-gray-200 rounded-md"
   src={lsm} 
 />
 
@@ -71,7 +71,7 @@ This is a quite huge advancement that hasn't come without strong [debate](https:
 **Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs with respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required in order to reliably build something trustable. Time will tell.. 
 
 <img
-  class="p-5 border border-gray-200 rounded-md"
+  class="crisp p-5 border border-gray-200 rounded-md"
   src={krsi} 
 />
 

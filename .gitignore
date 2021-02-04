@@ -3,6 +3,12 @@
 # private stuff
 /config/letsencrypt/keys
 
+# all cert stuff
+.pem
+.csr
+.crt
+.key
+
 # dependencies
 /node_modules
 /.pnp

@@ -1,7 +1,7 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
+import arch from './1_arch.png'
 import lsm from './lsm.svg'
-import krsi from './krsi.svg'
 
 export const meta = {
   title: 'Building a security tracing utility to snoop into the linux kernel',
@@ -39,6 +39,16 @@ I immediately came to the conclusion that the best way to studying those hooks w
 
 ## Architecture
 
+<img
+  class="p-5 border border-gray-200 rounded-md"
+  src={arch} 
+/>
+
+<img
+  class="p-5 border border-gray-200 rounded-md"
+  src={lsm} 
+/>
+
 
 
 ## Implementation details
@@ -66,11 +76,6 @@ The architecture of linux security modules is based on 3 main concepts:
 That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.
 
 
-<img
-  class="p-5 border border-gray-200 rounded-md"
-  src={lsm} 
-/>
-
 --- 
 
 ## eBPF and libbpf 
@@ -96,11 +101,6 @@ This gets interesting for a couple of reasons:
 
 This is a quite huge advancement that hasn't come without strong [debate](https://lwn.net/Articles/813261/) about performance and critycism with the main point being the following:  
 **Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs with respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required in order to reliably build something trustable. Time will tell.. 
-
-<img
-  class="p-5 border border-gray-200 rounded-md"
-  src={krsi} 
-/>
 
 --- 
 

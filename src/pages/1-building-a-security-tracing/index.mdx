@@ -1,7 +1,6 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
 import arch from './1_arch.png'
-import lsm from './lsm.svg'
 
 export const meta = {
   title: 'Building a security tracing utility to snoop into the linux kernel',
@@ -28,12 +27,12 @@ Almost..
 
 ## Quest
 
-During my usual quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://it.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). I must assume that you have at least a basic idea of how these two techs work, if it's not the case just jump to my previous post.  
+During my quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://it.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). If you lack a basic idea of how these two techs work just jump to my previous post.  
 Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel is pretty much **non-existent**.  
-Veeery well.. we are in for some true fun.   
-I immediately came to the conclusion that the best way to studying those hooks was indeed to build some code for tracing them, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
+Well.. we are in for some true fun.   
+I came to the conclusion that the best way for studying theese hooks was indeed to build some tool for observing them while they operate, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
 
-> The idea of lsmtrace is to dump every hook triggered by a specific executable along with a meaningful view of the hook arguments
+> The idea of lsmtrace is to dump every hook event triggered by a specific executable along with a meaningful view of the hook call arguments
 
 --- 
 
@@ -44,10 +43,8 @@ I immediately came to the conclusion that the best way to studying those hooks w
   src={arch} 
 />
 
-<img
-  class="p-5 border border-gray-200 rounded-md"
-  src={lsm} 
-/>
+### Userspace
+
 
 
 

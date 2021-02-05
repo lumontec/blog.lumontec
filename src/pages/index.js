@@ -2,10 +2,6 @@ import tinytime from 'tinytime'
 import Link from 'next/link'
 import Head from 'next/head'
 import getAllPostPreviews from '@/getAllPostPreviews'
-// import twitterCard from '@/img/twitter-card.jpg'
-import mediumLogo from '@/img/medium-logo.png'
-import linkedinLogo from '@/img/linkedin-logo.png'
-import githubLogo from '@/img/github-logo.png'
 import { lumontec } from '@/authors'
 
 const posts = getAllPostPreviews()
@@ -62,7 +58,7 @@ export default function Home() {
 
         <div className="transform hover:scale-95 scale-90 hidden lg:inline-flex lg:col-end-11 lg:col-span-2 xl:col-end-11 xl:col-span-1">
           <a href={'https://github.com/' + lumontec.github}>
-            <img src={lumontec.avatar} className="rounded-full border-2 border-gray-400" />
+            <img src={lumontec.avatar} className="rounded-full border-2 border-gray-300" />
           </a>
         </div>
       </div>

@@ -36,11 +36,10 @@ The architecture of linux security modules is based on 3 main concepts:
 * *Single reposnibility*: Hooks offer protection for very specific classes of operations
 * *Agnostic*: Hooks are simple function declarations that security engineers use to define their own implementation of security modules
 
-That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.
-
-
+That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.  
+   
 <img
-  class="crisp p-5 border border-gray-200 rounded-md"
+  class="leading-10 crisp p-5 border border-gray-200 rounded-md"
   src={lsm} 
 />
 

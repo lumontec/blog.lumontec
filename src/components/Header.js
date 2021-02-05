@@ -1,8 +1,6 @@
-//import Link from 'next/link'
-import mediumLogo from '@/img/medium-logo.png'
-import linkedinLogo from '@/img/linkedin-logo.png'
-import githubLogo from '@/img/github-logo.png'
-import twitterLogo from '@/img/twitter-logo.png'
+import mediumLogo from '@/img/medium.png'
+import linkedinLogo from '@/img/linkedin.png'
+import twitterLogo from '@/img/twitter.png'
 import { lumontec } from '@/authors'
 
 function TailwindMark({ className }) {
@@ -60,30 +58,24 @@ export default function Header() {
 
       <div className="items-end justify-end hidden sm:inline-flex ">
         <a
-          className="mr-1 transform hover:scale-105"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://twitter.com/' + lumontec.twitter}
         >
-          <img
-            src={twitterLogo}
-            className="rounded-full h-5 w-5 border border-gray-900 opacity-75 hover:opacity-100"
-          />
+          <img src={twitterLogo} className="opacity-75 hover:opacity-100" />
         </a>
 
         <a
-          className="w-6 mr-2 pb-0 transform hover:scale-105"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://www.linkedin.com/in/' + lumontec.linkedin}
         >
-          <img src={linkedinLogo} className="opacity-50 hover:opacity-100" />
+          <img src={linkedinLogo} className="opacity-75 hover:opacity-100" />
         </a>
 
         <a
-          className="w-8 mr-1 pr-3 pb-0.5 transform hover:scale-105"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://medium.com/' + lumontec.medium}
         >
-          <img
-            src={mediumLogo}
-            className="rounded-full border-2 border-gray-900 opacity-50 hover:opacity-100"
-          />
+          <img src={mediumLogo} className="opacity-75 hover:opacity-100" />
         </a>
       </div>
     </header>

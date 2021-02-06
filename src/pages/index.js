@@ -27,7 +27,7 @@ export default function Home() {
         <meta name="description" content="dips in my tech trips." />
       </Head>
 
-      <div className="md:grid md:grid-cols-10 gap-1 items-center pb-8 ">
+      <div className="md:grid md:grid-cols-10 gap-1 items-center pb-6 ">
         <div className="md:col-start-1 md:col-end-7">
           <h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-4xl md:leading-14">
             {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}

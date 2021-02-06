@@ -61,6 +61,7 @@ module.exports = {
         default: {
           css: {
             color: theme('colors.gray.700'),
+            fontFamily: 'inherit',
             h2: {
               fontWeight: '400',
               letterSpacing: theme('letterSpacing.tight'),
@@ -77,8 +78,21 @@ module.exports = {
             'ul li:before': {
               backgroundColor: theme('colors.gray.400'),
             },
+            'code::before': {
+              content: '""',
+            },
+            'code::after': {
+              content: '""',
+            },
             code: {
-              // color: theme('colors.gray.600'),
+              color: theme('colors.gray.700'),
+              backgroundColor: 'transparent',
+              borderColor: theme('colors.gray.300'),
+              borderRadius: '4px',
+              borderWidth: '1px',
+              fontSize: '13.5px',
+              fontWeight: '300',
+              padding: '2px',
             },
             a: {
               color: theme('colors.gray.900'),

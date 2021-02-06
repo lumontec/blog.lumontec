@@ -44,7 +44,23 @@ Well the utility will basically do three things:
 
 ## Architecture
 
-In order to achieve the previous
+The utility can be simply divided in multiple separated components:
+
+### kernelspace bpf probe
+
+Contains the programs that will be attached to the hooks, every hook call will generate one or more events embedding information directly extracted by the hooks arguments. 
+This will include: 
+* *hook function signature*
+* *struct arguments information* 
+ 
+These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf faciltiy of type <code>BPF_MAP_TYPE_RINGBUF</code> and sample code <code>function (int ciao, char *pippo) {}</code>    
+
+```c  
+function (int ciao, char *pippo) {}
+```
+
+
+* **userspace executable**: this will launch the executable  
 
 
 

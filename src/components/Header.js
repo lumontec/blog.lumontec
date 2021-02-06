@@ -40,7 +40,7 @@ function TailwindLogo({ className }) {
 
 export default function Header() {
   return (
-    <header className="flex justify-center items-center pt-4">
+    <header className="flex justify-end items-center pt-4 pb-2">
       <div>
         {/* <Link href="/">
           <a aria-label="Tailwind CSS Blog">
@@ -59,21 +59,21 @@ export default function Header() {
 
       <div className="items-end justify-end inline-flex ">
         <a
-          className="crisp w-5 mr-3 transform scale-90 hover:scale-100"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://twitter.com/' + lumontec.twitter}
         >
           <img src={twitterLogo} className="opacity-75 hover:opacity-100" />
         </a>
 
         <a
-          className="crisp w-5 mr-3 transform scale-90 hover:scale-100"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://www.linkedin.com/in/' + lumontec.linkedin}
         >
           <img src={linkedinLogo} className="opacity-75 hover:opacity-100" />
         </a>
 
         <a
-          className="crisp w-5 mr-3 transform scale-90 hover:scale-100"
+          className="w-5 mr-3 transform scale-90 hover:scale-100"
           href={'https://medium.com/' + lumontec.medium}
         >
           <img src={mediumLogo} className="opacity-75 hover:opacity-100" />

@@ -32,18 +32,26 @@ Beeing the tech super-fresh I culdn't find any project built on this in the open
 Well.. we are in for some true fun.   
 I came to the conclusion that the best way for studying theese hooks was indeed to build some tool for observing them while they operate, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
 
-> The idea of lsmtrace is to dump every hook event triggered by a specific executable along with a meaningful view of the hook call arguments
-
 --- 
 
+## lsmtrace
+
+The idea of lsmtrace is to dump every hook event triggered by a specific executable along with a meaningful view of the hook call arguments. But what does that mean actually ?  
+Well the utility will basically do three things:
+1. Attach to all linux security modules hooks
+2. Spawn the process being monitored
+3. Dump events once hooks are triggered by the executable 
+
 ## Architecture
+
+In order to achieve the previous
+
+
 
 <img
   class="crisp p-5 border border-gray-200 rounded-md"
   src={arch} 
 />
-
-
 
 
 

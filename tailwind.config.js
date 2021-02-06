@@ -62,6 +62,10 @@ module.exports = {
           css: {
             color: theme('colors.gray.700'),
             fontFamily: 'inherit',
+            strong: {
+              fontWeight: '600',
+              color: theme('colors.gray.700'),
+            },
             h2: {
               fontWeight: '400',
               letterSpacing: theme('letterSpacing.tight'),
@@ -95,7 +99,7 @@ module.exports = {
               padding: '2px',
             },
             a: {
-              color: theme('colors.gray.900'),
+              color: theme('colors.gray.700'),
             },
             pre: {
               color: theme('colors.gray.600'),

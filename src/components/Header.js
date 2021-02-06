@@ -40,7 +40,7 @@ function TailwindLogo({ className }) {
 
 export default function Header() {
   return (
-    <header className="flex justify-end items-center pt-4 pb-2">
+    <header className="flex justify-end items-center pt-4 pb-4 sm:pb-2">
       <div>
         {/* <Link href="/">
           <a aria-label="Tailwind CSS Blog">

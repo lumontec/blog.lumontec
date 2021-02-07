@@ -95,7 +95,8 @@ module.exports = {
               borderRadius: '4px',
               borderWidth: '1px',
               fontSize: '13.5px',
-              fontWeight: '300',
+              fontWeight: '400',
+              letterSpacing: theme('letterSpacing.normal'),
               padding: '2px',
             },
             a: {

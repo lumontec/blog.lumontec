@@ -53,11 +53,80 @@ This will include:
 * *hook function signature*
 * *struct arguments information* 
  
-These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf faciltiy of type <code><strong>BPF_MAP_TYPE_RINGBUF</strong></code> and sample code <code>function (int ciao, char *pippo) {}</code>
+These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf faciltiy of type <code>BPF_MAP_TYPE_RINGBUF</code> that implements an in-kernel circular buffer which can be used to stream information to userspace. Thus every kernel hook will have attached a simple program declared as follows:
 
-```c  
-function (int ciao, char *pippo) {}
+```c
+SEC("lsm/file_open")
+int BPF_PROG(file_open, struct file *file)
+{
+
+	FILTER_CATHEGORY_INT(FILE_CATH)
+	FILTER_OWN_PID_INT()
+	DUMP_FUNC(file_open, struct file *file)
+	
+	DUMP_FILE_STRUCT(file)
+
+	bpf_printk("lsm_hook: file: file_open\n");
+	return 0;
+}
+``` 
+
+Without entering too much detail, we simply declare the hook we will attach to, with the arguments that will be passed, and we call a number of macros which basically have theese roles:
+
+<code>FILTER_CATHEGORY_INT</code>   filter out hook cathegory (set by userspace at probe launch)  <br/>  
+<code>FILTER_OWN_PID</code>  filter hook calls related to specific pid (set by userspace at probe launch)  <br/>  
+<code>DUMP_FUNC</code>  dump hook signature event (push to ringbuf) <br/>  
+<code>DUMP_FILE_STRUCT</code>  dump view of the file struct (push to ringbuf) <br/>  
+
+In addition for debug purposes we trace the operation with <code>bpf_printk</code> which can be inspected with:
+<code> cat /sys/kernel/debug/tracing/trace_pipe </code>
+
+What follows is an example implementation of one of the previous event dump macros:
+
+```c
+#define DUMP_FUNC(FNAME, ...) {									\
+	const char func_call_name[] = #FNAME;							\
+	const char func_call_args[] = #__VA_ARGS__;						\
+	dump_func(func_call_name, func_call_args);						\
+}	
+
+...
+
+static int dump_func(const char *fname, const char *fargs) {
+
+	struct func_call_Event *evt; 								
+	char func_call_label[] = "HOOK_CALL";
+
+	evt = bpf_ringbuf_reserve(&ringbuf, sizeof(*evt), ringbuffer_flags);
+
+	if (!evt)										
+		return -1;									
+
+	evt->super.etype = FUNCTION_CALL;
+
+	bpf_probe_read_str(evt->super.label, sizeof(evt->super.label), func_call_label);	
+	bpf_probe_read_str(evt->name, sizeof(evt->name), fname);				
+	bpf_probe_read_str(evt->args, sizeof(evt->args), fargs);				
+
+	bpf_ringbuf_submit(evt, ringbuffer_flags);						
+
+	return 0;
+}
 ```
+
+As you see inside the <code>dump_func</code> definition, we simply allocate a new event and assign it a label, we set the name and the arguments. In order to push this information to the ringbuffer we need to first reserve enough space on the buffer with <code>bpf_ringbuf_reserve</code> and submit the forged event with <code>bpf_ringbuf_submit</code>  
+
+You may have immediately noticed a couple of quirks:
+
+1. Most of this code operates on variables by making use of specific helper functions (e.g. <code>bpf_prove_read_str</code> exposed along with the previous ones by the **libbpf** library. This required in order to safely read information inside the kernel
+
+2. The macro definition has a strange form, declares a local string inside <u>a code block</u> and then calls the <code>dump_func</code> passing this string. This is really required because declaring a string literal outside of the block generates an error <code>libbpf: elf: skipping unrecognized data section(6) .rodata.str1.1</code> due to the fact that libbpf does not support string literals in the **rodata** elf section atm. To work this around a simple quick solution is to declare the literal inside a code block in such a way that it can be simply allocated **on the stack**.
+
+
+
+
+
+
 
 
 * **userspace executable**: this will launch the executable  

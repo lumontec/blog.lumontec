@@ -28,16 +28,17 @@ Almost..
 
 ## Quest
 
-During my quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://it.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). If you lack a basic idea of how these two techs work just jump to my previous post.  
-Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel is **[quite slim](https://www.kernel.org/doc/html/v5.1/security/LSM.html)**.  
+During my quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://en.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). If you lack a basic idea of how these two techs work just jump to my previous post.  
+Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel are **[quite thin](https://www.kernel.org/doc/html/v5.1/security/LSM.html)**.  
 Well.. we are in for some true fun.   
-I came to the conclusion that the best way for studying theese hooks was indeed to build some tool for observing them while they operate, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
+I came to the conclusion that the best way for studying theese hooks was indeed to build some tool for observing them as they do their job, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
 
 --- 
 
 ## lsmtrace
 
-The idea of lsmtrace is to dump every hook event triggered by a specific executable along with a meaningful view of the hook call arguments. But what does that mean actually ?  
+The idea of lsmtrace (linux security modules trace) is to dump every hook event triggered by a specific executable along with a meaningful view of the hook call arguments.  
+But what does that mean actually ?  
 Well the utility will basically do three things:
 1. Attach to all linux security modules hooks
 2. Spawn the process being monitored
@@ -50,7 +51,7 @@ The utility can be simply divided in two distinct components:
 * userspace executable
 
 Both of them make extensive usage of **libbpf** library in order to:
-* loading and confiuguring ebpf probe
+* load and confiugure ebpf probe
 * attach to hooks at the kernel side
 * safely access information at the kernel side
 * stream information to userspace using the bpf ringbuffer
@@ -70,7 +71,7 @@ This will include:
 * *hook function signature*
 * *struct arguments information* 
  
-These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf faciltiy of type <code>BPF_MAP_TYPE_RINGBUF</code> that implements an in-kernel circular buffer which can be used to stream information to userspace. Thus every kernel hook will have attached a simple program declared as follows:
+These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf facility of type <code>BPF_MAP_TYPE_RINGBUF</code> implementing an in-kernel circular buffer which can be used to stream information to userspace. Thus every kernel hook will have attached a simple program declared as follows:
 
 ```c
 SEC("lsm/file_open")
@@ -88,14 +89,14 @@ int BPF_PROG(file_open, struct file *file)
 }
 ``` 
 
-Without entering too much detail, we simply declare the hook we will attach to, with the arguments that will be passed, and we call a number of macros which basically have theese roles:
+Without entering in too much detail, we simply declare the hook we will attach to, with the arguments that will be passed, and we call a number of macros which basically have theese roles:
 
 <code>FILTER_CATHEGORY_INT()</code>   filter out hook cathegory (set by userspace at probe launch)  <br/>  
 <code>FILTER_OWN_PID()</code>  filter hook calls related to specific pid (set by userspace at probe launch)  <br/>  
 <code>DUMP_FUNC()</code>  dump hook signature event (push to ringbuf) <br/>  
 <code>DUMP_FILE_STRUCT()</code>  dump view of the file struct (push to ringbuf) <br/>  
 
-In addition for debug purposes we trace the operation with <code>bpf_printk</code> which can be inspected with:
+In addition for debug purposes we trace the operation with <code>bpf_printk</code> accessible at:
 <code> cat /sys/kernel/debug/tracing/trace_pipe </code>
 
 What follows is an example implementation of one of the previous event dump macros:
@@ -131,15 +132,15 @@ static int dump_func(const char *fname, const char *fargs) {
 }
 ```
 
-As you see inside the <code>dump_func</code> definition, we simply allocate a new event and assign it a label, we set the name and the arguments. In order to push this information to the ringbuffer we need to first reserve enough space on the buffer with <code>bpf_ringbuf_reserve</code> and submit the forged event with <code>bpf_ringbuf_submit</code>  
+As you see inside the <code>dump_func</code> definition, we simply allocate a new event and mark it with a label, we set the name and the arguments. In order to push this information to the ringbuffer we need to first reserve enough space with <code>bpf_ringbuf_reserve</code> and submit the forged event with <code>bpf_ringbuf_submit</code>  
 
 You may have immediately noticed a couple of quirks:
 
 1. Most of this code operates on variables by making use of specific helper functions (e.g. <code>bpf_prove_read_str</code> exposed along with the previous ones by the **libbpf** library. This required in order to safely read information inside the kernel
 
-2. The macro definition has a strange form, declares a local string inside <u>a code block</u> and then calls the <code>dump_func</code> passing this string. This is really required because declaring a string literal outside of the block generates an error <code>libbpf: elf: skipping unrecognized data section(6) .rodata.str1.1</code> due to the fact that libbpf does not support string literals in the **rodata** elf section atm. To work this around a simple quick solution is to declare the literal inside a code block in such a way that it can be simply allocated **on the stack**.
+2. The macro definition has a strange form, declares a local string inside <u>a code block</u> then calls <code>dump_func()</code> passing this string. This is required because declaring a string literal outside of the block generates an error <code>libbpf: elf: skipping unrecognized data section(6) .rodata.str1.1</code> due to the fact that libbpf does not seem to support string literals in the **rodata** elf section atm. To work around this probelm a simple quick solution is to declare the literal inside a code block in such a way that it can be simply allocated **on the stack**.
 
-A similar logic is also implemented to dump hook arguments, referring to the <code><strong>file_open</strong></code> call for example we can extract information from the <code>file</code> struct as follows:
+A similar logic is also implemented to dump hook arguments, referring to the <code><strong>file_open()</strong></code> call for example we can extract information from the <code>file</code> struct as follows:
 
 ```c
 /* file */
@@ -209,7 +210,7 @@ At the userspace side the application entrypoint looks more or less like this:
 
 ```
 
-This is pretty straightforward, but just to sum it up: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the pid to be filtered and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That is because the new process is **waited** as soon as its spawned by the main thread, so that it can be conveniently converted my an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side. After this all we just sit there polling the ringbuffer for new events through <code>ring_buffer__poll()</code> call. The flow should be quite similar to this:
+This is pretty straightforward, but just to sum it up: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the target executable pid and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That happens because the new process is **waited** as soon as it's spawned by the main thread, so that it can be conveniently converted by an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side. After all this we just sit there polling the ringbuffer for new events through <code>ring_buffer__poll()</code> call. The flow should be quite similar to this:
 
 <img
   class="pl-60 pr-60 crisp p-5 border border-gray-200 rounded-md"
@@ -248,20 +249,20 @@ int printStrMemberEvt(const struct Event *evt) {
 
 Ok, enough talking, let's see what lsmtrace actually does in action.  
 As an extremely simple example we want to snoop all kernel security events triggered by the execution of an embarassingly simple <code>ls /home</code> command. In order to achieve this we simply launch something like <code>lsmtrace [executable] -a "args"</code> where <code>-a</code> flag specifies eventual arguments which may be passed to the executable. 
-I also extended the functionality to dump raw events when syscalls are entered and exited, in order to enrich lsm hook events with additional context which is quite important to understand what is actually happening under the hood.
+Functionality was extended to dump raw events when syscalls are entered and exited, in order to enrich lsm hook events with additional context which is quite important to understand what is actually happening under the hood.
 
-### Couple details
+### A couple details
 1. In order to run this you will need a linux kernel > 5.7 compiled with the following options (in future distro kernel upstream releases these are likely to be enabled by default):
 * BPF_SYSCALL
 * DEBUG_INFO
 * DEBUG_INFO_BTF
 * BPF_LSM
 
-2. By now you will have to pass the full path of the executable, so if launching <code>ls</code> just pass it <code>/usr/bin/ls</code> 
+2. By now you will have to pass the full path of the executable, so if launching <code>ls</code> just pass <code>/usr/bin/ls</code> 
 
-3. By now attaching all the linux security module hooks is not immediate with bpf, so just wait some seconds and don't get mad
+3. Attaching all the linux security module hooks is not immediate with bpf, so just wait some seconds and just don't get mad
 
-## Please run this thing
+### Please run this thing
 
 Ok let's see it in action (i filtered the output a little as it gets quite verbose):
 ```
@@ -404,19 +405,53 @@ If we have a look deeper with **strace** we can see that the process is trying t
 ... 
 ```
 
-At this time the process starts accessing and loading the dynamic dependencies through <code>p/read()</code> and <code>mmap()</code> syscalls.
+At this time the process starts accessing and loading the dynamic dependencies through <code>p/read()</code> and <code>mmap()</code> syscalls.   
 
+Reading on faster through the stream of events we get:
 
+```
+-> SYS_CALL_ENTER:  ioctl
+-> HOOK_CALL: -> file_ioctl( struct file *file, unsigned int cmd, unsigned long arg )
+     file,f_path.dentry,d_name.name = out
+...
+ -> SYS_CALL_ENTER:  openat
+...
+-> HOOK_CALL: -> file_open( struct file *file )
+     file,f_mode = 32769
+     file,f_path.dentry,d_flags = 16448
+     file,f_path.dentry,d_name.name = home
+     file,f_path.dentry,d_inode,i_ino = 3014657
+... 
+-> SYS_CALL_ENTER:  fstat
+-> SYS_CALL_EXIT:   fstat
+...
+-> SYS_CALL_ENTER:  getdents64
+-> HOOK_CALL: -> file_permission( struct file *file, int mask )
+     file,f_path.dentry,d_name.name = home
+     file,f_path.dentry,d_inode,i_ino = 3014657
+-> SYS_CALL_EXIT:   getdents64
+     ret: 104
+...
+```
 
-
-
-
+We observe that **stdout** is setup by <code>ioctl()</code> call and eventually this is where the executable does the actual job, by accessing the file <code>/home</code> and calling <code>fstat()</code> and <code>getdents64()</code> syscalls to gather information about its **dentries**.  
+In an effort not to get killed I will spare you the details of how the whole process is terminated after  the job, but if yout want to find it out you can play with the sources and have a little of fun.
 
 --- 
 
-## Wrapping the spring roll 
+## Back to the port 
 
-Writing an deployng flexible security code has never been so easy, I expect to see a number of different solutions grow building their foundation on KRSI and bpf.  
-Deep lsm observability will likely become another quite crucial aspect both when deveoloping and deploying these kind of programs. That is exatcly why I wrote a simple security [**tracer**](https://github.com/lumontec/lsmtrace) to provide an high level view of what a specific process is doing at the hooks level.  
-That is juice for my next post. 
+What I showed you here was meant to be two things:
+1. A real world application leveraging **KRSI** for monitoring
+2. A deeper approach for reverse engineering a specific executable behavior against your OS kernel
+
+I am perfectly aware that part of or maybe even all these functionalities could be implemented by leveraging **bpftrace** but the intent of **lsmtrace** is to provide a plug and play functionality exposing a view of the kernel structures related to specific hook calls, just as **strace** does with syscalls.  
+
+I am currently extending this information along with my need to access it, so as you might expect, although <u>all hook calls</u> are currently implemented, not all their struct arguments are dumped to console. Yet thanks to the helper macros available in the project, adding new ones should be a matter of minutes.  
+
+If you find this useful or you want to play with the code **[HERE](https://github.com/lumontec)** you can find everything you need, feel free to open PRs or file issues and don't hesitate to contact me if you want to talk about this topic and much more. I am always happy to chat about technology.
+
+
+
+
 

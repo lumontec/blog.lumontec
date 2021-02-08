@@ -27,14 +27,14 @@ export default function Home() {
         <meta name="description" content="dips in my tech trips." />
 
         {/* Global site tag (gtag.js) - Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-HV1FW5Q2PE" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LK0TLB3N0Z" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-HV1FW5Q2PE');
+            gtag('config', 'G-LK0TLB3N0Z');
         `,
           }}
         />

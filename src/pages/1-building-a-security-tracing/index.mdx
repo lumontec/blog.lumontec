@@ -42,9 +42,25 @@ Well the utility will basically do three things:
 2. Spawn the process being monitored
 3. Dump events once hooks are triggered by the executable 
 
-## Architecture
+## Implementation
 
-The utility can be simply divided in multiple separated components:
+The utility can be simply divided in two distinct components:
+* kernelspace bpf probe
+* userspace executable
+
+Both of them make extensive usage of **libbpf** library in order to:
+* loading and confiuguring ebpf probe
+* attach to hooks at the kernel side
+* safely access information at the kernel side
+* stream information to userspace using the bpf ringbuffer
+
+This architectural diagram should provide you with a mental representation of the details that 
+follow:
+
+<img
+  class="crisp p-5 border border-gray-200 rounded-md"
+  src={arch} 
+/>
 
 ### kernelspace bpf probe
 
@@ -145,117 +161,61 @@ As you see nested macro definitions have been implemented in order to allow reus
 Macro <code>BPF_CORE_READ()</code> is a libbpf helper which allows us to safely access kernel structure members across different versions.  
 [This post](https://facebookmicrosites.github.io/bpf/blog/2020/02/19/bpf-portability-and-co-re.html) will provide you with much greater detail.
 
+### Userspace executable
+
+At the userspace side the application entrypoint looks more or less like this:
+
+```c
+...
+	/* Parse command line arguments */
+	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
+	if (err)
+		return err;
+...
+
+	int child_pid = exec_prog_and_wait(my_exec_path, my_exec_argv);
+...
+	/* Configure bpf probe with init values */
+	skel->bss->my_pid = child_pid;
+	skel->rodata->cathegory = argp_args.cathegory;
+...
+
+	/* Attach tracepoints */
+	err = lsmtrace_bpf__attach(skel);
+	if (err) {
+		log_err("Failed to attach BPF skeleton\n");
+		goto cleanup;
+	}
+
+	/* Send child cont signal */
+	log_verb("Attached, starting execution\n");
+	kill(child_pid, SIGCONT);	
+
+	/* Set up ring buffer polling */
+	ringbuffer = ring_buffer__new(bpf_map__fd(skel->maps.ringbuf), handle_event, NULL, NULL);
+	if (!ringbuffer) {
+		err = -1;
+		log_err("Failed to create ring buffer\n");
+		goto cleanup;
+	}
+...
+	while (!exiting) {
+...
+
+		err = ring_buffer__poll(ringbuffer, 100 /* timeout, ms */);
+...
+	}
+
+```
+
+This is pretty straightforward, but just to condense it: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the pid to be filtered and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That is because the new process is **waited** as soon as its spawned by the main thread, so that it can be conveniently converted my an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side.
 
 
 
-
-
-
-
-<img
-  class="crisp p-5 border border-gray-200 rounded-md"
-  src={arch} 
-/>
-
-
-
-## Implementation details
-
-### Complexities
-
-### Quirks
 
 ## Let`s have some fun
 
 ## Some brainfood
-
-Other tools are present, bpftrace ...
-If you want to develop the sanbox
-
-
-
-Linux is a constantly evolving incredibly widespread operating system, and it should be pretty straightforward to understand that for these two reasons alone providing strong guarantees about security is a really complex matter. The faster the technology evolves the more fixes are needed and faster deployment of those will be required. Those are the two main reasons that drove kernel developers to design an extremely low level framework exposing a number of hooks which are capable of authorizing or rejecting specific operations happening against sensible kernel resources. 
-
-The architecture of linux security modules is based on 3 main concepts:
-* *Locality*: Hooks are invoked as close as possible to the resource being protected to deter against [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) exploits 
-* *Single reposnibility*: Hooks offer protection for very specific classes of operations
-* *Agnostic*: Hooks are simple function declarations that security engineers use to define their own implementation of security modules
-
-That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.
-
-
---- 
-
-## eBPF and libbpf 
-
-Bpf is a quite old technology born with its roots in the packet capture field (close to tcpdump) but just recently extended to provide developers with the capability to inject custom code inside the linux kernel without any need to recompile the kernel itself. These bpf programs can be attached to specific kernel facilities like *tracepoints* or *kprobes* and can be flexibly deployed to implement powerful tracing and kernel observability tools. [Bcc](https://github.com/iovisor/bcc) and [bpftrace](https://github.com/iovisor/bpftrace) are two examples of tools that leverage extended bpf to provide the user with insightful metrics at a minimal performance costs.  
-
-And that's *almost* awasome..
-
-I mean it is awasome, but writing bpf programs is not really that easy for a number of reasons, consider that our code gets injected in the kernel thus has to be verified of beeing free of circular dependencies or infinite loops or unsafe access to memory .. Everything that could panic or halt your os (and sometimes even straight correct code) is rejected by one mythological kernel routine called `the bpf verifier` that is pickier than your girlfriend in the wrong day. But that is not all. 
-The linux kernel is constantly evolving by changing and moving its internal structures as versions change, then how do I write code that is actually portable between these ? 
-
-Libbpf is a library that aims to simplify the deployment of bpf programs by offering a number of helper functions useful to access internal kernel information providing a stable view of these structures. A functionalty called CO-RE (compile once run everywhere) magically hides from user a quantity of pointer chasing and field relocation logic, allowing us to happily access **with some limitations** a stable view of kernel information across different machines. 
-
---- 
-
-## eBPF + LSM = KRSI freshness 
-
-Linux kernel v5.7 included a really interesting [patch](https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/), that allows security people to design custom policies which can be injected in-kernel to be triggered by the security hooks exposed by the LSM framework. 
-KRSI stands for Kernel Runtime Security Instrumentation and the target of this patch is to allow users to implement lsm hooks by utilizing bpf compiled code.
-This gets interesting for a couple of reasons:
-* *Kernel function call flow mutation*: AFAIK this is the very first application of ebpf where injected code is actually capable reject / blocking the execution of some kernel logic
-* *Flexibility*: ebpf can be attached / removed on the fly offering fast replacement of vulerable security code   
-
-This is a quite huge advancement that hasn't come without strong [debate](https://lwn.net/Articles/813261/) about performance and critycism with the main point being the following:  
-**Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs with respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required in order to reliably build something trustable. Time will tell.. 
-
---- 
-
-## KRSI and other fantastic beasts
-
-Ok so in this final section I want to provide a high level view of the linux kernel and MAC solutions and help you and myself out in understanding where krsi is sitting and what it can replace/improve in this rich landscape. 
-
-### Syscalls and Kernel resources 
-
-In laughably simple model we have userspace applications interacting with kernel resources by means of syscalls, which is really **the stable api** seen by users and the only possible way that they have to access and claim their share of os resources. Right in front of these we have the lsm hooks enforcing protection logic. 
-
-### Userspace vs kernelspace enforcement
-
-There is a whole family of tools that implement security enforcement by restricting syscalls, which makes a whole lot of sense at first sight:
-
-> If users trigger syscalls to interact with kernel state why not restricting those actions directly ?
-
-This is exactly what tools like *seccomp* or *systrace* do in the first place. Seccomp (which stands for secure computing) is a kernel facility that enables a process to auto restrict its access to syscalls, and was extended to support bpf injection in what is currently known as **seccomp-bpf**. 
-With seccomp-bpf is possible to attach bpf programs to syscalls in order to reject or pass them (quite similar to krsi right ?) which is awasome, moreover it is nicely wrapped by *libseccomp* library, the same library extesively used by **runc** in order to allow enforcement for its open-container-initiative runtime security. If you are asking yourself, yes, this is the mainmechanism behind those container *security profiles* that implement syscall access restriction both in [docker](https://docs.docker.com/engine/security/seccomp/) and [kubernetes](https://kubernetes.io/docs/tutorials/clusters/seccomp/) environments.  
-So what's the problem with this approach ?  
-The problem is that enforcement is performed very far from the kernel resources being protected, and relying on userspace data (e.g. paths or strings passed syscall arguments) exposes us to a whole family of subtle security exploits where this information can be manipulated after the checks have been done by exploiting race conditions (I won't enter those details here).  
-So maybe you are asking yourselves:  
-
-> Then what kind of information can I use inside my seccomp-bpf code ?
-
-And the answer is: everything which is not passed as a pointer argument to syscalls. 
-Thus formulating complex policies with seccomp-bpf is virtually impossible, as I cannot have access to very basic information such as:
-* the name of the executable
-* some path i am passing to my syscall
-
-Add to that the fact that syscalls are contantly evolving, now you should have a quite clear idea on why lsm hooks were introduced. 
-They offered the capabilty to implement very sophisticated security policies deep inside the linux kernel. The only problem being that every time a fix was required, a whole kernel recompilation was required. This rigidity concerning deployment is the main reason why security modules such as SELinux and AppArmor ended up being include straight in the kernel tree, event thought this wasn't likely the idea when LSM framework was conceived.  
-BUT this is not the case anymore with krsi, that makes the whole developement/deployment cycle far easier to implement without even restarting the machine.
-
---- 
-
-## Requirements
-
-> Ok, but tell me what I need to play with this stuff
-
-You need a linux kernel > 5.7 compiled with the following options:
-- BPF_SYSCALL 
-- DEBUG_INFO
-- DEBUG_INFO_BTF  
-- **BPF_LSM**
-
-Being an extremely fresh feature, no os that I know of ships with option BPF_LSM enabled by default, yet all these will likely be enabled in the future. Ubuntu upstream kernel for example already includes in its version 5.10.0 the first three options and is likely to enable the last one [quite soon](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1905975). 
 
 --- 
 

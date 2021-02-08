@@ -29,7 +29,7 @@ Almost..
 ## Quest
 
 During my quest for barely understandable technology I stumbled upon a really interesting feature released with kernel version v5.7 called **[krsi](https://lwn.net/Articles/798157/)** (kernel runtime security instrumentation) or bpf_lsm that allows developers to implement flexible [linux security modules](https://it.wikipedia.org/wiki/Linux_Security_Modules) in userspace by exploiting the functionalities exposed by [extended bpf](https://prototype-kernel.readthedocs.io/en/latest/bpf/). If you lack a basic idea of how these two techs work just jump to my previous post.  
-Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel is pretty much **non-existent**.  
+Beeing the tech super-fresh I culdn't find any project built on this in the open source community, so I started *dreaming* about developing one myself. That quickly made me want to discover more about the linux security modules framework, as well as realizing that the docs for the hundred+more hooks exposed by the kernel is **[quite slim](https://www.kernel.org/doc/html/v5.1/security/LSM.html)**.  
 Well.. we are in for some true fun.   
 I came to the conclusion that the best way for studying theese hooks was indeed to build some tool for observing them while they operate, that's why I developed a simple utilty which i called [lsmtrace](https://github.com/lumontec/lsmtrace). 
 
@@ -162,7 +162,7 @@ As you see nested macro definitions have been implemented in order to allow reus
 Macro <code>BPF_CORE_READ()</code> is a libbpf helper which allows us to safely access kernel structure members across different versions.  
 [This post](https://facebookmicrosites.github.io/bpf/blog/2020/02/19/bpf-portability-and-co-re.html) will provide you with much greater detail.
 
-### Userspace executable
+### userspace executable
 
 At the userspace side the application entrypoint looks more or less like this:
 
@@ -247,9 +247,170 @@ int printStrMemberEvt(const struct Event *evt) {
 ## Let`s have some fun
 
 Ok, enough talking, let's see what lsmtrace actually does in action.  
-As an extremely simple example we want to snoop all kernel security events triggered by the execution of an embarassingly simple <code>ls /home</code> command. Let's roll..
+As an extremely simple example we want to snoop all kernel security events triggered by the execution of an embarassingly simple <code>ls /home</code> command. In order to achieve this we simply launch something like <code>lsmtrace [executable] -a "args"</code> where <code>-a</code> flag specifies eventual arguments which may be passed to the executable. 
+I also extended the functionality to dump raw events when syscalls are entered and exited, in order to enrich lsm hook events with additional context which is quite important to understand what is actually happening under the hood.
 
-## Some brainfood
+### Couple details
+1. In order to run this you will need a linux kernel > 5.7 compiled with the following options (in future distro kernel upstream releases these are likely to be enabled by default):
+* BPF_SYSCALL
+* DEBUG_INFO
+* DEBUG_INFO_BTF
+* BPF_LSM
+
+2. By now you will have to pass the full path of the executable, so if launching <code>ls</code> just pass it <code>/usr/bin/ls</code> 
+
+3. By now attaching all the linux security module hooks is not immediate with bpf, so just wait some seconds and don't get mad
+
+## Please run this thing
+
+Ok let's see it in action (i filtered the output a little as it gets quite verbose):
+```
+$ sudo ./lsmtrace /usr/bin/ls -a "/home"
+
+Attaching hooks, don`t rush..
+
+-> SYS_CALL_EXIT:   pause
+...
+-> SYS_CALL_ENTER:  rt_sigreturn
+-> SYS_CALL_EXIT: 
+...
+-> SYS_CALL_ENTER:  execve
+-> HOOK_CALL: -> vm_enough_memory( struct mm_struct *mm, long pages )
+-> HOOK_CALL: -> cred_prepare( struct cred *new, const struct cred *old, gfp_t gfp )
+-> HOOK_CALL: -> file_alloc_security( struct file *file )
+```
+
+From the start it's already quite clear what is happening if we keep an eye on the previous flow diagram: first the child process is **unpaused** then execve() syscall is called in order to execute the actual <code>/usr/bin/ls /home</code> command.   
+What happens underneath is quite interesting: since the executable has to be mapped to virtual memory a first check is made on available pages with <code>vm_enough_memory()</code> hook so that we can efficiently avoid to request pages to the kernel if none is available. <code>cred_prepare()</code> and <code>file_alloc_security</code> setup security credentials for executable by copying the old ones and allocate the initial <code>file->f_security</code> struct (have a look [here](https://www.kernel.org/doc/html/latest/security/credentials.html) to dig deeper),  
+
+But let's move on..
+
+```
+-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 2
+     inode,i_mode = 16877
+...
+-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 3670017
+...
+-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 3670018
+     inode,i_mode = 16877
+...
+-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 3670696
+     inode,i_mode = 33261
+...
+-> HOOK_CALL: -> file_open( struct file *file )
+     file,f_path.dentry,d_name.name = ls
+     file,f_path.dentry,d_inode,i_ino = 3670696
+...
+```
+
+Permission is requested for three inodes, can you guess who are they ? Let's see..
+```
+$ ls -id /
+2 /
+$ ls -id /usr
+3670017 /usr
+$ ls -id /usr/bin
+3670018 /usr/bin
+```
+Once the thread has jumped on each of these inodes <code>file_open()</code> hook is triggered for **ls** in order to actually start loading the executable...   
+As you can see the level of detail is extreme, just consider that we havn't even opened the executable to be loaded, so allow me to quickly jump to the points that imho are the most juicy.
+
+```
+-> HOOK_CALL: -> inode_follow_link( struct dentry *dentry, struct inode *inode, bool rcu )
+     dentry,d_name.name = lib
+     dentry,d_inode,i_ino = 14
+...
+-> HOOK_CALL: -> file_open( struct file *file )
+     file,f_mode = 32769
+     file,f_path.dentry,d_flags = 0
+     file,f_path.dentry,d_name.name = ld-2.32.so
+...
+-> HOOK_CALL: -> bprm_committing_creds( struct linux_binprm *bprm )
+     bprm,file,f_path.dentry,d_name.name = ls
+     bprm,file,f_path.dentry,d_inode,i_ino = 3670696
+-> HOOK_CALL: -> bprm_committed_creds( struct linux_binprm *bprm )
+     bprm,file,f_path.dentry,d_name.name = ls
+     bprm,file,f_path.dentry,d_inode,i_ino = 3670696
+```
+
+What happens here is quite interesting: symlinks are followed through <code>lib</code> up to <code>ld-2.32.so</code> which is the **dynamic linker**, which is now invoked in order to launch our actual executable since this has to be linked against several dyamic libraries, more on that in a minute. <code>bprm_committing_creds</code> and <code>bprm_committed_creds</code> will officially commit new security credentials for the executable, that is finally ok to be launched.
+
+```
+-> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
+     file,f_mode = 32797
+     file,f_path.dentry,d_flags = 64
+     file,f_path.dentry,d_name.name = ls
+... 
+-> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
+     file,f_mode = 32797
+     file,f_path.dentry,d_flags = 0
+     file,f_path.dentry,d_name.name = ld-2.32.so
+```
+
+The executable and dynamic linker are *finally* mapped to virtual memory. 
+
+```
+-> SYS_CALL_EXIT:   execve
+     ret: 0
+-> SYS_CALL_ENTER:  brk
+-> SYS_CALL_EXIT:   brk
+     ret: 94264417042432
+-> SYS_CALL_ENTER:  arch_prctl
+-> SYS_CALL_EXIT:   arch_prctl
+     ret: -22
+-> SYS_CALL_ENTER:  access
+-> HOOK_CALL: -> cred_prepare( struct cred *new, const struct cred *old, gfp_t gfp )
+-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 2
+> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
+     inode,i_ino = 524289
+-> SYS_CALL_EXIT:   access
+     ret: -2
+```
+
+At this point we notice <code>execve()</code> giving the way to <code>brk()</code> syscall (likely coming from a <code>malloc()</code> call to check the end of the heap segment), <code>arch_prctl()</code> which is used to set up *thread local storage* and <code>access()</code> syscallwhich seem to fail with 2 = <code>ENOENT</code> code. 
+
+If we have a look deeper with **strace** we can see that the process is trying to access <code>/etc/ld.so.preload</code> which is a list of libraries that should be preloaded before the others. This is happily ignored so that the process can go on with its dance..
+
+
+```
+-> SYS_CALL_ENTER:  openat
+...
+-> HOOK_CALL: -> file_open( struct file *file )
+     file,f_path.dentry,d_name.name = libselinux.so.1
+     file,f_path.dentry,d_inode,i_ino = 3677561
+...
+-> SYS_CALL_ENTER:  read
+-> HOOK_CALL: -> file_permission( struct file *file, int mask )
+     file,f_path.dentry,d_name.name = libselinux.so.1
+     file,f_path.dentry,d_inode,i_ino = 3677561
+-> SYS_CALL_EXIT:   read
+     ret: 832
+...
+-> SYS_CALL_ENTER:  mmap
+-> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
+     file,f_mode = 32797
+     file,f_path.dentry,d_flags = 0
+     file,f_path.dentry,d_name.name = libselinux.so.1
+...
+-> SYS_CALL_ENTER:  openat
+...
+-> HOOK_CALL: -> file_open( struct file *file )
+     file,f_path.dentry,d_name.name = libc-2.32.so
+... 
+```
+
+At this time the process starts accessing and loading the dynamic dependencies through <code>p/read()</code> and <code>mmap()</code> syscalls.
+
+
+
+
+
+
 
 --- 
 

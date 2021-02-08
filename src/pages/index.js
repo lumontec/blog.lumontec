@@ -25,6 +25,19 @@ export default function Home() {
         <meta property="og:image" content={`https://blog.tailwindcss.com${lumontec.avatar}`} />
         <title>blog.lumontec</title>
         <meta name="description" content="dips in my tech trips." />
+
+        {/* Global site tag (gtag.js) - Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-HV1FW5Q2PE" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-HV1FW5Q2PE');
+        `,
+          }}
+        />
       </Head>
 
       <div className="md:grid md:grid-cols-10 gap-1 items-center pb-6 ">

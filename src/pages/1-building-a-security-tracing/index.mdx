@@ -213,7 +213,7 @@ At the userspace side the application entrypoint looks more or less like this:
 This is pretty straightforward, but just to sum it up: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the target executable pid and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That happens because the new process is **paused** as soon as it's spawned by the main thread, so that it can be conveniently converted by an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side. After all this we just sit there polling the ringbuffer for new events through <code>ring_buffer__poll()</code> call. The flow should be quite similar to this:
 
 <img
-  class="object-contain object-scale-down pl-60 pr-60 crisp p-5 border border-gray-200 rounded-md"
+  class="object-contain object-scale-down crisp p-5 border border-gray-200 rounded-md"
   src={userflow} 
 />
 

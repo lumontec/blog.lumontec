@@ -1,6 +1,7 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
 import arch from './1_arch.png'
+import userflow from './1_userflow.png'
 
 export const meta = {
   title: 'Building a security tracing utility to snoop into the linux kernel',
@@ -208,12 +209,45 @@ At the userspace side the application entrypoint looks more or less like this:
 
 ```
 
-This is pretty straightforward, but just to condense it: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the pid to be filtered and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That is because the new process is **waited** as soon as its spawned by the main thread, so that it can be conveniently converted my an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side.
+This is pretty straightforward, but just to sum it up: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the pid to be filtered and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That is because the new process is **waited** as soon as its spawned by the main thread, so that it can be conveniently converted my an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side. After this all we just sit there polling the ringbuffer for new events through <code>ring_buffer__poll()</code> call. The flow should be quite similar to this:
 
+<img
+  class="pl-60 pr-60 crisp p-5 border border-gray-200 rounded-md"
+  src={userflow} 
+/>
 
+Once events get intercepted by the userspace, they are simply cast from generic <u>polymorphic type</u> <code>Event</code> to the specific type so that it can be printed to stdout. All this happens inside a specific <code>statedump</code> library module. Follws definition of the types and example of a simple event dump method for strings:
 
+```c
+
+/* events.h */
+
+typedef struct Event {
+	enum Event_type etype;
+	char label[MAX_LABEL_SIZE];
+} Event;
+...
+typedef struct str_member_Event {
+	Event super;
+	char member[MAX_STR_SIZE];
+	char msg[MAX_MSG_SIZE];
+} str_member_Event;
+...
+
+/* statedump.c */
+
+int printStrMemberEvt(const struct Event *evt) {
+	const str_member_Event* tevt = (str_member_Event*) evt;
+	log_info("     %s = ", tevt->msg);
+	log_info("%s\n", tevt->member);
+	return 0;
+}
+```
 
 ## Let`s have some fun
+
+Ok, enough talking, let's see what lsmtrace actually does in action.  
+As an extremely simple example we want to snoop all kernel security events triggered by the execution of an embarassingly simple <code>ls /home</code> command. Let's roll..
 
 ## Some brainfood
 

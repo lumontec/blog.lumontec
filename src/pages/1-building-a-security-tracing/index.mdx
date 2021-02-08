@@ -73,10 +73,10 @@ int BPF_PROG(file_open, struct file *file)
 
 Without entering too much detail, we simply declare the hook we will attach to, with the arguments that will be passed, and we call a number of macros which basically have theese roles:
 
-<code>FILTER_CATHEGORY_INT</code>   filter out hook cathegory (set by userspace at probe launch)  <br/>  
-<code>FILTER_OWN_PID</code>  filter hook calls related to specific pid (set by userspace at probe launch)  <br/>  
-<code>DUMP_FUNC</code>  dump hook signature event (push to ringbuf) <br/>  
-<code>DUMP_FILE_STRUCT</code>  dump view of the file struct (push to ringbuf) <br/>  
+<code>FILTER_CATHEGORY_INT()</code>   filter out hook cathegory (set by userspace at probe launch)  <br/>  
+<code>FILTER_OWN_PID()</code>  filter hook calls related to specific pid (set by userspace at probe launch)  <br/>  
+<code>DUMP_FUNC()</code>  dump hook signature event (push to ringbuf) <br/>  
+<code>DUMP_FILE_STRUCT()</code>  dump view of the file struct (push to ringbuf) <br/>  
 
 In addition for debug purposes we trace the operation with <code>bpf_printk</code> which can be inspected with:
 <code> cat /sys/kernel/debug/tracing/trace_pipe </code>
@@ -84,10 +84,10 @@ In addition for debug purposes we trace the operation with <code>bpf_printk</cod
 What follows is an example implementation of one of the previous event dump macros:
 
 ```c
-#define DUMP_FUNC(FNAME, ...) {									\
-	const char func_call_name[] = #FNAME;							\
-	const char func_call_args[] = #__VA_ARGS__;						\
-	dump_func(func_call_name, func_call_args);						\
+#define DUMP_FUNC(FNAME, ...) {                             \
+	const char func_call_name[] = #FNAME;                   \
+	const char func_call_args[] = #__VA_ARGS__;             \
+	dump_func(func_call_name, func_call_args);              \
 }	
 
 ...
@@ -122,14 +122,33 @@ You may have immediately noticed a couple of quirks:
 
 2. The macro definition has a strange form, declares a local string inside <u>a code block</u> and then calls the <code>dump_func</code> passing this string. This is really required because declaring a string literal outside of the block generates an error <code>libbpf: elf: skipping unrecognized data section(6) .rodata.str1.1</code> due to the fact that libbpf does not support string literals in the **rodata** elf section atm. To work this around a simple quick solution is to declare the literal inside a code block in such a way that it can be simply allocated **on the stack**.
 
+A similar logic is also implemented to dump hook arguments, referring to the <code><strong>file_open</strong></code> call for example we can extract information from the <code>file</code> struct as follows:
+
+```c
+/* file */
+#define DUMP_FILE_STRUCT(...) {                                     \
+	DUMP_MEMBER_UINT(__VA_ARGS__,f_mode)                            \
+	DUMP_DENTRY_STRUCT(__VA_ARGS__,f_path.dentry)                   \
+}	
+
+...
+
+#define DUMP_MEMBER_UINT(...) {                                     \
+	const char dump_member_name[] = #__VA_ARGS__;                   \
+	unsigned int mptr = BPF_CORE_READ(__VA_ARGS__);                 \
+	dump_uint_member(dump_member_name, mptr);                       \
+}
+
+```
+
+As you see nested macro definitions have been implemented in order to allow reuse of <code>DUMP...STRUCT()</code> logic.   
+Macro <code>BPF_CORE_READ()</code> is a libbpf helper which allows us to safely access kernel structure members across different versions.  
+[This post](https://facebookmicrosites.github.io/bpf/blog/2020/02/19/bpf-portability-and-co-re.html) will provide you with much greater detail.
 
 
 
 
 
-
-
-* **userspace executable**: this will launch the executable  
 
 
 

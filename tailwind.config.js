@@ -58,10 +58,18 @@ module.exports = {
         },
       },
       typography: theme => ({
+        excerpt: {
+          css: {
+            fontSize: '16px',
+            letterSpacing: theme('letterSpacing.tight'),
+          },
+        },
         default: {
           css: {
             color: theme('colors.gray.700'),
             fontFamily: 'inherit',
+            fontSize: '15px',
+            letterSpacing: theme('letterSpacing.tight'),
             strong: {
               fontWeight: '600',
               color: theme('colors.gray.700'),
@@ -72,6 +80,7 @@ module.exports = {
               color: theme('colors.gray.800'),
             },
             h3: {
+              letterSpacing: theme('letterSpacing.tight'),
               fontWeight: '400',
               color: theme('colors.gray.800'),
             },

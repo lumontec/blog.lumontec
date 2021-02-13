@@ -20,7 +20,7 @@ This opens up a whole class of fresh solutions that I want to geolocate inside o
 
 <!--/excerpt-->
 
-<p className="prose-lg">
+<p className="prose-excerpt">
 One of the shiny new features available in the linux kernel since <a href="https://lwn.net/ml/linux-kernel/20200220175250.10795-1-kpsingh@chromium.org/"><strong>this patch</strong></a> on version 5.7 is the capability to attach ebpf programs directly to linux security module hooks in order to implement flexible authorization policies that can be injected in-kernel exploiting bpf magic. 
 This opens up a whole class of fresh solutions that I want to geolocate inside of the rich landscape of kernel security
 </p>
@@ -39,7 +39,7 @@ The architecture of linux security modules is based on 3 main concepts:
 That third point in particular is quite important because it frees the linux kernel from any sort of specific security model implementation allowing third party developers to implement their own frameworks as well as to easily replace / fix them in case vulnerabilities emerge in their codebase. Quite famous examples of these implementations are Apparmor and SELinux which (at the time of this post) is the default security module enabled on every single android device available on the market btw.  
    
 <img
-  class="leading-10 crisp p-5 border border-gray-200 rounded-md"
+  className="leading-10 crisp p-5 border border-gray-200 rounded-md"
   src={lsm} 
 />
 
@@ -70,7 +70,7 @@ This is a quite huge advancement that hasn't come without strong [debate](https:
 **Lsm hooks are not an api:** this is actually a problem that follows the power of ebpf, due to the fact that it can basically consume information from everywhere in the kernel, it ends up using anything as as api, and api need to be stable. That is basically the reason why tracepoints are widely more used to attach bpf programs with respect to kprobes. So the real question is, how stable are lsm hooks ? Quite stable as I understood, but is also true that we are talking about kernel security here so total stability would probably be required in order to reliably build something trustable. Time will tell.. 
 
 <img
-  class="crisp p-5 border border-gray-200 rounded-md"
+  className="crisp p-5 border border-gray-200 rounded-md"
   src={krsi} 
 />
 

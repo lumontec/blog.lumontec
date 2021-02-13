@@ -106,7 +106,7 @@ module.exports = {
               borderRadius: '4px',
               borderWidth: '1px',
               fontSize: '13px',
-              fontWeight: '400',
+              fontWeight: theme('fontWeight.medium'),
               letterSpacing: theme('letterSpacing.wide'),
               padding: '2px',
             },
@@ -115,6 +115,7 @@ module.exports = {
             },
             pre: {
               fontFamily: theme('fontFamily.mono'),
+              fontWeight: theme('fontWeight.medium'),
               color: theme('colors.gray.700'),
               backgroundColor: '#f8f9fb',
               borderColor: theme('colors.gray.300'),

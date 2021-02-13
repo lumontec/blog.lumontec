@@ -45,6 +45,7 @@ module.exports = {
           'Inter var',
           ...defaultTheme.fontFamily.sans,
         ],
+        mono: ['ui-monospace', 'SFMono-Regular', ...defaultTheme.fontFamily.mono],
       },
       colors: {
         code: {
@@ -99,12 +100,12 @@ module.exports = {
             },
             code: {
               color: theme('colors.gray.700'),
-              backgroundColor: 'transparent',
-              backgroundColor: theme('colors.gray.100'),
+              fontFamily: theme('fontFamily.mono'),
+              backgroundColor: '#f8f9fb',
               borderColor: theme('colors.gray.300'),
               borderRadius: '4px',
               borderWidth: '1px',
-              fontSize: '13.5px',
+              fontSize: '13px',
               fontWeight: '400',
               letterSpacing: theme('letterSpacing.wide'),
               padding: '2px',
@@ -113,11 +114,12 @@ module.exports = {
               color: theme('colors.gray.700'),
             },
             pre: {
-              color: theme('colors.gray.600'),
-              backgroundColor: theme('colors.gray.100'),
+              fontFamily: theme('fontFamily.mono'),
+              color: theme('colors.gray.700'),
+              backgroundColor: '#f8f9fb',
               borderColor: theme('colors.gray.300'),
               borderWidth: '1px',
-              fontSize: '13.5px',
+              fontSize: '13px',
               // spacing: '20px'
             },
             blockquote: {

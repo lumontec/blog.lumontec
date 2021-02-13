@@ -6,16 +6,16 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const tokenClassNames = {
-  tag: 'text-code-gray',
-  'attr-name': 'text-code-gray',
-  'attr-value': 'text-code-gray',
-  deleted: 'text-code-gray',
-  inserted: 'text-code-gray',
-  punctuation: 'text-code-gray',
-  keyword: 'text-gray-500',
-  string: 'text-code-gray',
-  function: 'text-gray-900 font-normal',
-  boolean: 'text-code-gray',
+  tag: 'text-gray-700',
+  'attr-name': 'text-gray-700',
+  'attr-value': 'text-gray-700',
+  deleted: 'text-gray-700',
+  inserted: 'text-gray-700',
+  punctuation: 'text-gray-700',
+  keyword: 'text-code-700',
+  string: 'text-gray-700',
+  function: 'text-gray-900',
+  boolean: 'text-gray-700',
   comment: 'text-gray-400 italic',
 }
 
@@ -46,7 +46,7 @@ module.exports = withBundleAnalyzer({
           rehypePlugins: [
             rehypePrism,
             () => {
-              return (tree) => {
+              return tree => {
                 visit(tree, 'element', (node, index, parent) => {
                   let [token, type] = node.properties.className || []
                   if (token === 'token') {
@@ -67,7 +67,7 @@ module.exports = withBundleAnalyzer({
           resourceQuery: /preview/,
           use: [
             ...mdx,
-            createLoader(function (src) {
+            createLoader(function(src) {
               if (src.includes('<!--more-->')) {
                 const [preview] = src.split('<!--more-->')
                 return this.callback(null, preview)
@@ -85,7 +85,7 @@ module.exports = withBundleAnalyzer({
         {
           use: [
             ...mdx,
-            createLoader(function (src) {
+            createLoader(function(src) {
               const content = [
                 'import Post from "@/components/Post"',
                 'export { getStaticProps } from "@/getStaticProps"',

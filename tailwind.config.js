@@ -45,7 +45,7 @@ module.exports = {
           'Inter var',
           ...defaultTheme.fontFamily.sans,
         ],
-        mono: ['ui-monospace', 'SFMono-Regular', ...defaultTheme.fontFamily.mono],
+        jbrains_mono: ['Jetbrains Mono', ...defaultTheme.fontFamily.mono],
       },
       colors: {
         code: {
@@ -99,8 +99,8 @@ module.exports = {
               content: '""',
             },
             code: {
-              color: theme('colors.gray.700'),
-              fontFamily: theme('fontFamily.mono'),
+              color: theme('colors.gray.600'),
+              fontFamily: 'Jetbrains Mono',
               backgroundColor: '#f8f9fb',
               borderColor: theme('colors.gray.300'),
               borderRadius: '4px',
@@ -111,10 +111,10 @@ module.exports = {
               padding: '2px',
             },
             a: {
-              color: theme('colors.gray.700'),
+              color: theme('colors.gray.600'),
             },
             pre: {
-              fontFamily: theme('fontFamily.mono'),
+              fontFamily: 'Jetbrains Mono',
               fontWeight: '500',
               color: theme('colors.gray.700'),
               backgroundColor: '#f8f9fb',

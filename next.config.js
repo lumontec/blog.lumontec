@@ -6,17 +6,17 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const tokenClassNames = {
-  tag: 'text-gray-700 font-semibold',
-  'attr-name': 'text-gray-700 font-normal',
-  'attr-value': 'text-gray-700 font-norma',
-  deleted: 'text-gray-700 font-normal',
-  inserted: 'text-gray-700 font-normal',
-  punctuation: 'text-gray-700 font-normal',
-  keyword: 'text-gray-700 font-normal',
-  string: 'text-gray-700 font-normal',
-  function: 'text-gray-900 font-normal',
-  boolean: 'text-gray-700 font-normal',
-  comment: 'text-gray-400 italic font-normal',
+  tag: 'text-gray-600 font-medium',
+  'attr-name': 'text-gray-600 font-medium',
+  'attr-value': 'text-gray-600 font-medium',
+  deleted: 'text-gray-600 font-medium',
+  inserted: 'text-gray-600 font-medium',
+  punctuation: 'text-gray-600 font-medium',
+  keyword: 'text-gray-600 font-medium',
+  string: 'text-gray-600 font-medium',
+  function: 'text-gray-800 font-medium',
+  boolean: 'text-gray-600 font-medium',
+  comment: 'text-gray-400 italic font-medium',
 }
 
 module.exports = withBundleAnalyzer({

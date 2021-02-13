@@ -100,6 +100,7 @@ module.exports = {
             code: {
               color: theme('colors.gray.700'),
               backgroundColor: 'transparent',
+              backgroundColor: theme('colors.gray.100'),
               borderColor: theme('colors.gray.300'),
               borderRadius: '4px',
               borderWidth: '1px',
@@ -113,8 +114,8 @@ module.exports = {
             },
             pre: {
               color: theme('colors.gray.600'),
-              backgroundColor: 'transparent',
-              borderColor: theme('colors.gray.200'),
+              backgroundColor: theme('colors.gray.100'),
+              borderColor: theme('colors.gray.300'),
               borderWidth: '1px',
               fontSize: '13.5px',
               // spacing: '20px'

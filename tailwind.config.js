@@ -105,8 +105,8 @@ module.exports = {
               borderColor: theme('colors.gray.300'),
               borderRadius: '4px',
               borderWidth: '1px',
-              fontSize: '13px',
-              fontWeight: '500',
+              fontSize: '12px',
+              fontWeight: '400',
               letterSpacing: theme('letterSpacing.wide'),
               padding: '2px',
             },
@@ -115,12 +115,12 @@ module.exports = {
             },
             pre: {
               fontFamily: 'Jetbrains Mono',
-              fontWeight: '500',
+              fontWeight: '400',
               color: theme('colors.gray.700'),
               backgroundColor: '#f8f9fb',
               borderColor: theme('colors.gray.300'),
               borderWidth: '1px',
-              fontSize: '13px',
+              fontSize: '12px',
               // spacing: '20px'
             },
             blockquote: {

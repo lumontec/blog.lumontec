@@ -12,9 +12,9 @@ const tokenClassNames = {
   deleted: 'text-code-gray',
   inserted: 'text-code-gray',
   punctuation: 'text-code-gray',
-  keyword: 'text-blue-500',
+  keyword: 'text-gray-500',
   string: 'text-code-gray',
-  function: 'text-teal-600 font-semibold',
+  function: 'text-gray-900 font-normal',
   boolean: 'text-code-gray',
   comment: 'text-gray-400 italic',
 }
@@ -46,7 +46,7 @@ module.exports = withBundleAnalyzer({
           rehypePlugins: [
             rehypePrism,
             () => {
-              return tree => {
+              return (tree) => {
                 visit(tree, 'element', (node, index, parent) => {
                   let [token, type] = node.properties.className || []
                   if (token === 'token') {
@@ -67,7 +67,7 @@ module.exports = withBundleAnalyzer({
           resourceQuery: /preview/,
           use: [
             ...mdx,
-            createLoader(function(src) {
+            createLoader(function (src) {
               if (src.includes('<!--more-->')) {
                 const [preview] = src.split('<!--more-->')
                 return this.callback(null, preview)
@@ -85,7 +85,7 @@ module.exports = withBundleAnalyzer({
         {
           use: [
             ...mdx,
-            createLoader(function(src) {
+            createLoader(function (src) {
               const content = [
                 'import Post from "@/components/Post"',
                 'export { getStaticProps } from "@/getStaticProps"',

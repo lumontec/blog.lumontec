@@ -80,14 +80,14 @@ export default function Home() {
         {posts.map(({ link, module: { default: Component, meta } }) => {
           return (
             <li key={link} className="py-12">
-              <article className="space-y-2 xl:grid xl:grid-cols-8 xl:space-y-0 xl:items-baseline">
+              <article className="space-y-2 xl:grid xl:grid-cols-6 xl:space-y-0 xl:items-baseline">
                 <dl>
                   <dt className="sr-only">Published on</dt>
-                  <dd className="xl:col-span-2 text-base leading-8 font-medium text-gray-500">
+                  <dd className="text-base leading-6 font-medium text-gray-500">
                     <time dateTime={meta.date}>{postDateTemplate.render(new Date(meta.date))}</time>
                   </dd>
                 </dl>
-                <div className="space-y-5 xl:col-span-4 xl:col-end-7">
+                <div className="space-y-5 xl:col-span-4">
                   <div className="space-y-4">
                     <h2 className="text-2xl leading-8 font-normal tracking-medium">
                       <Link href={link}>

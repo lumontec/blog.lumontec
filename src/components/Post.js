@@ -55,10 +55,10 @@ export default function Post({ meta, children, posts }) {
         </div>
       </header>
       <div
-        className="divide-y xl:divide-y-0 divide-gray-200 xl:grid xl:grid-cols-8 xl:col-gap-6 pb-16 xl:pb-20"
+        className="divide-y xl:divide-y-0 divide-gray-200 xl:grid xl:grid-cols-6 xl:col-gap-6 pb-16 xl:pb-20"
         style={{ gridTemplateRows: 'auto 1fr' }}
       >
-        <dl className="pt-6 pb-8 xl:pt-11 xl:border-b xl:border-gray-200 xl:col-start-1 xl:col-span-2">
+        <dl className="pt-6 pb-8 xl:pt-11 xl:border-b xl:border-gray-200">
           <dt className="sr-only">Authors</dt>
           <dd>
             <ul className="flex justify-start xl:block space-x-8 sm:space-x-12 xl:space-x-0 xl:space-y-8">
@@ -89,8 +89,8 @@ export default function Post({ meta, children, posts }) {
             </ul>
           </dd>
         </dl>
-        <div className="divide-y-gray-200 xl:pb-0 xl:col-end-7 xl:col-span-4 xl:row-span-2">
-          <div className="text-md prose max-w-none font-normal  text-gray-700 pt-10 pb-8">
+        <div className="divide-y-gray-200 xl:pb-0 xl:col-span-4 xl:row-span-2">
+          <div className="text-md prose max-w-none font-normal text-gray-700 pt-10 pb-8">
             {/* <MDXProvider components={mdxComponents}>{children}</MDXProvider> */}
             <MDXProvider>{children}</MDXProvider>
           </div>
@@ -105,7 +105,7 @@ export default function Post({ meta, children, posts }) {
             </div>
           )}
         </div>
-        <footer className="text-sm font-medium leading-5 divide-y divide-gray-200 xl:col-start-1 xl:col-span-2 xl:row-start-2">
+        <footer className="text-sm font-medium leading-5 divide-y divide-gray-200 xl:col-start-1 xl:row-start-2">
           {(next || previous) && (
             <div className="space-y-4 py-4">
               {next && (

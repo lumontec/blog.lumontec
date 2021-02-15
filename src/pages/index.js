@@ -42,11 +42,11 @@ export default function Home() {
 
       <div className="md:grid md:grid-cols-10 gap-1 items-center pb-6 ">
         <div className="md:col-start-1 md:col-end-7">
-          <h1 className="text-3xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-3xl sm:leading-10 md:text-3xl md:leading-14">
+          <h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-4xl md:leading-14">
             {/* <h1 className="text-3xl leading-9 font-semibold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14"> */}
             blog.lumontec
           </h1>
-          <p className="text-lg pt-1 leading-9 text-gray-500">dips in my tech trips ↵</p>
+          <p className="text-xl pt-1 leading-9 text-gray-500">dips in my tech trips ↵</p>
         </div>
 
         {/* <div className="items-end justify-end hidden xl:inline-flex xl:col-end-6 xl:col-span-1">

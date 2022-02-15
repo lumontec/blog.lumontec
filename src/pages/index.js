@@ -51,7 +51,7 @@ export default function Home() {
 						<h1 className="text-5xl leading-9 font-semibold text-gray-700 tracking-tight sm:text-5xl sm:leading-10 md:text-4xl md:leading-14">
 							blog.lumontec
 						</h1>
-						<p className="text-xl pt-1 leading-9 text-gray-400 pb-6">dips in my tech trips ↵</p>
+						<p className="text-xl leading-9 text-gray-400 pb-7">dips in my tech trips ↵</p>
 					</div>
 
 					<div className="transform hover:scale-95 scale-90 hidden xl:inline-flex md:col-end-11 md:col-span-2 xl:col-end-11 xl:col-span-1">
@@ -67,11 +67,11 @@ export default function Home() {
 
 						return (
 							selCathegory == cathegory ? (
-								<p className="text-lg text-teal-600 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+								<p className="text-lg text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
 									{cathegory}
 								</p>
 							) : (
-								<p className="text-lg text-gray-300 hover:text-teal-600 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+								<p className="text-lg text-gray-300 hover:text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
 									{cathegory}
 								</p>
 							)
@@ -99,6 +99,10 @@ export default function Home() {
 									<dd className="text-base leading-6 font-medium text-gray-500">
 										<time dateTime={meta.date}>{postDateTemplate.render(new Date(meta.date))}</time>
 									</dd>
+									<dd className="text-md leading-10 font-normal text-gray-400">
+										<label >{meta.cathegory}</label>
+									</dd>
+
 								</dl>
 								<div className="space-y-5 xl:col-span-4">
 									<div className="space-y-4">

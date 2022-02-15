@@ -1,4 +1,4 @@
-import NextDocument, { Html, Head, Main, NextScript } from 'next/document'
+import NextDocument, {Html, Head, Main, NextScript} from 'next/document'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -8,7 +8,7 @@ class InlineStylesHead extends Head {
   }
 
   __getInlineStyles() {
-    const { assetPrefix, files } = this.context._documentProps
+    const {assetPrefix, files} = this.context._documentProps
     if (!files || files.length === 0) return null
 
     return files
@@ -29,7 +29,7 @@ class InlineStylesHead extends Head {
 export default class Document extends NextDocument {
   static async getInitialProps(ctx) {
     const initialProps = await NextDocument.getInitialProps(ctx)
-    return { ...initialProps }
+    return {...initialProps}
   }
 
   render() {

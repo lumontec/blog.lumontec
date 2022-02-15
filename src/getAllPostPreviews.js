@@ -24,3 +24,4 @@ export function getAllPosts() {
     dateSortDesc(a.module.meta.date, b.module.meta.date)
   )
 }
+

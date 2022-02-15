@@ -3,12 +3,15 @@ import Link from 'next/link'
 import Head from 'next/head'
 import getAllPostPreviews from '@/getAllPostPreviews'
 import {lumontec} from '@/authors'
+import {cathegories} from '@/cathegories'
+import React, {useState} from 'react';
 
 const posts = getAllPostPreviews()
 
 const postDateTemplate = tinytime('{MMMM} {DD}, {YYYY}')
 
 export default function Home() {
+	const [selCathegory, setSelCathegory] = useState('/.*/s');
 	return (
 		<div className="divide-y divide-gray-200">
 			<Head>
@@ -59,17 +62,35 @@ export default function Home() {
 
 				</div>
 
-				<div class="flex flex-wrap flex-row justify-start gap-x-16 pb-2">
-					<p className="text-lg text-gray-300 hover:text-teal-500">kernel/eBPF</p>
-					<p className="text-lg text-gray-300 hover:text-teal-500">Infra/k8s</p>
-					<p className="text-lg text-gray-300 hover:text-teal-500">Distributed systems</p>
-					<p className="text-lg text-gray-300 hover:text-teal-500">Stream of consciousness</p>
+				<div class="flex flex-wrap flex-row justify-start gap-x-16 gap-y-2 pb-3">
+					{cathegories.elements.map(cathegory => {
+
+						return (
+							selCathegory == cathegory ? (
+								<p className="text-lg text-teal-600 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+									{cathegory}
+								</p>
+							) : (
+								<p className="text-lg text-gray-300 hover:text-teal-600 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+									{cathegory}
+								</p>
+							)
+						)
+
+					})}
+
+
 				</div>
 
-			</div>
+			</div >
 
 			<ul className="divide-y divide-gray-200">
 				{posts.map(({link, module: {default: Component, meta}}) => {
+
+					// filter unselected cathegories
+					if (selCathegory != '/.*/s' && selCathegory != meta.cathegory)
+						return
+
 					return (
 						<li key={link} className="py-12">
 							<article className="space-y-2 xl:grid xl:grid-cols-6 xl:space-y-0 xl:items-baseline">

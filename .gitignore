@@ -4,15 +4,15 @@
 /config/letsencrypt/keys
 
 # all cert stuff
-.pem
-.csr
-.crt
-.key
+*.pem
+*.csr
+*.crt
+*.key
 
 # dependencies
 /node_modules
 /.pnp
-.pnp.js
+*.pnp.js
 
 # testing
 /coverage

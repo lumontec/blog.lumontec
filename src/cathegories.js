@@ -4,6 +4,6 @@ export const cathegories = {
     '/.*/s',
 //    'infra/k8s',
     'kernel/eBPF',
-//    'Stream of conscousness'
+    'Stream of conscousness'
   ]
 }

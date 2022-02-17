@@ -3,7 +3,17 @@ Just my personal blog,
 built on top of is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).  
 Powered by [tailwindcss](https://tailwindcss.com/)  
 
-## Getting Started
+
+## Production
+
+Simply run the infra stuff
+
+```bash
+./infra/launch.sh
+```
+This will spinup the webhook client, so each commit will resync the website
+
+## Developement
 
 First, run the development server:
 

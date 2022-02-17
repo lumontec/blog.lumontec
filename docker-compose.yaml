@@ -9,7 +9,8 @@ services:
        - 80:80
        - 443:443
      volumes:
-       - ./letsencrypt:/config
+       #       - ./letsencrypt:/config
+       - ./nginx-config:/config/nginx/site-confs
      environment:
        - EMAIL=lucamontechiesi@gmail.com
        - URL=lumontec.com

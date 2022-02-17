@@ -9,7 +9,7 @@ services:
        - 80:80
        - 443:443
      volumes:
-       - ./config/letsencrypt:/config
+       - ./letsencrypt:/config
      environment:
        - EMAIL=lucamontechiesi@gmail.com
        - URL=lumontec.com
@@ -22,5 +22,5 @@ services:
    blog-lumontec:
      build: . 
      ports:
-      - "8000:3000"
+      - 8000:3000
      restart: always

@@ -9,7 +9,7 @@ Powered by [tailwindcss](https://tailwindcss.com/)
 Simply run the infra stuff
 
 ```bash
-./infra/launch.sh
+cd infra && ./launch.sh
 ```
 This will spinup the webhook client, so each commit will resync the website
 

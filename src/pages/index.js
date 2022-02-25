@@ -62,16 +62,16 @@ export default function Home() {
 
 				</div>
 
-				<div class="flex flex-wrap flex-row justify-start gap-x-16 gap-y-2 pb-3">
+				<div className="flex flex-wrap flex-row justify-start gap-x-16 gap-y-2 pb-3">
 					{cathegories.elements.map(cathegory => {
 
 						return (
 							selCathegory == cathegory ? (
-								<p className="text-lg text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+								<p key={cathegory} className="text-lg text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
 									{cathegory}
 								</p>
 							) : (
-								<p className="text-lg text-gray-300 hover:text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
+								<p key={cathegory} className="text-lg text-gray-300 hover:text-gray-500 cursor-pointer" onClick={() => setSelCathegory(cathegory)}>
 									{cathegory}
 								</p>
 							)

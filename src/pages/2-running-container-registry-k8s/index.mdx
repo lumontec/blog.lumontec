@@ -28,8 +28,8 @@ With this hack you can, thanks to the oddities of <strong>NodePorts</strong>
 
 ## The painful declarative way
 
-One of the most loved / hated concepts about k8s lies in the way he allows / forces us to do pretty much everything in a extremistic declarative fashion. Pretty much decoupling the <strong>what</strong> from the <strong>how</strong>, it forces us to behave as selfish and arrogant developers who only care about describing what they want completely ignoring who will take care of the steps required for realizing what we are asking. Yaml format only tell k8s what binaries they want to run, but in order for that to happen this image has to exist in the registry, and has to be pullable. Let's face it, this is painful, not for a single use cluster, but imagine yourself working on 10 different clusters with access to different networks, registries, secrets .. This is insanely boring maintainance ..
-At this point you start realizing that during early developement, where you generally need to push your image to dozens of environments is becoming a nightmare whenever you need to add a line to your container image or your binary. Developing operators is one specific example where this problem happens a lot, and sometimes you really need to deploy.
+One of the most loved / hated concepts about k8s lies in the way he allows / forces us to do pretty much everything in a declarative fashion. Pretty much decoupling the <strong>what</strong> from the <strong>how</strong>, it forces us to behave as selfish arrogant developers who only care about describing what we want ignoring who will take care of the steps required for satisfying our request. Yaml format only tell k8s what binaries we want to run, but in order for that to happen the container image has to exist in the registry, and must be pullable. Let's face it, this is painful, not for a single use cluster, but imagine yourself working on 10 different clusters with access to different networks, registries, secrets .. This is insanely boring maintainance ..
+At this point you start realizing that during early developement, where you generally need to push your image to dozens of environments is becoming a nightmare whenever you need to add a line to your container image or your binary. Developing operators is one specific example where this problem happens a lot, and sometimes you really need to deploy, and do it fast.
 
 At that point I am sure some of you came to my same conclusion:
 
@@ -37,421 +37,252 @@ Wait a minute, k8s is the de facto system designed to run services, and a contai
 
 --- 
 
-## Too easy
+## Single step deploy solution
 
 This is embarassingly easy, we just deploy our registry service to the cluster:
 
 ```yaml
-
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: registry
+  name: registry
+  namespace: kube-registry
+spec:
+  ports:
+  - nodePort: 30100
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: registry
+  type: NodePort
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-pvc
+  namespace: kube-registry
+spec:
+  storageClassName: ""
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: registry
+  name: registry
+  namespace: kube-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - image: registry:2
+        imagePullPolicy: IfNotPresent
+        name: registry
+        volumeMounts:
+        - mountPath: /var/lib/registry
+          name: registry-vol
+      volumes:
+      - name: registry-vol
+        persistentVolumeClaim:
+          claimName: registry-pvc
 ```
 
-## Implementation
+Apply and heres what you get
 
-The utility can be simply divided in two distinct components:
-* kernelspace bpf probe
-* userspace executable
+```bash
+$ kg all -n kube-registry
++ kubectl get all -n kube-registry
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/kube-registry-677b64f8-xxhq9   1/1     Running   0          20d
 
-Both of them make extensive usage of **libbpf** library in order to:
-* load and confiugure ebpf probe
-* attach to hooks at the kernel side
-* safely access information at the kernel side
-* stream information to userspace using the bpf ringbuffer
+NAME                    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kube-registry   NodePort   172.20.128.62   <none>        5000:30100/TCP   94d
 
-This architectural diagram should provide you with a mental representation of the details that 
-follow:
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kube-registry   1/1     1            1           94d
 
-<img
-  className="crisp p-5 border border-gray-200 rounded-md"
-  src={arch} 
-/>
+NAME                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/kube-registry-677b64f8   1         1         1       94d
+```
 
-### kernelspace bpf probe
+## Was too good to be true
 
-Contains the programs that will be attached to the hooks, every hook call will generate one or more events embedding information directly extracted by the hooks arguments. 
-This will include: 
-* *hook function signature*
-* *struct arguments information* 
- 
-These events will be efficiently pushed to userspace by means of the **[bpf ringbuffer](https://www.kernel.org/doc/html/latest/bpf/ringbuf.html)**, a kernel bpf facility of type <code>BPF_MAP_TYPE_RINGBUF</code> implementing an in-kernel circular buffer which can be used to stream information to userspace. Thus every kernel hook will have attached a simple program declared as follows:
+As soon as we get our registry up and running that wonderful sensation of accomplishment immediately dies after we ask ourself the following questions:
 
-```c
-SEC("lsm/file_open")
-int BPF_PROG(file_open, struct file *file)
+1. Now that I have my registry up and running, how will I push my image to this ?
+2. Second and most important, what value do I set for my Deployment image to pull from this registry ?
+
+Let's go in order
+
+### Pushing to the registry
+
+From the pushing perspective, remember that our registry is merely a service, exchanging data through http protocol.
+Then what we can easily leverage an ingress to communicate with it. Or even easier just port-forward to localhost and push there.
+
+```bash
+$ kubectl port-forward service/registry 30100:5000 -n kube-registry
+Forwarding from 127.0.0.1:30100 -> 5000
+Forwarding from [::1]:30100 -> 5000
+```
+
+Now we can push from another terminal, will use an example alpine image for convenience, we will simply push it to the service forwarded on our localhost:
+
+```bash
+$ docker pull alpine:latest
+$ docker tag alpine:latest localhost:30100/alpine:latest
+$ docker push localhost:30100/alpine:latest
+The push refers to repository [localhost:30100/alpine]
+4fc242d58285: Pushed
+latest: digest: sha256:a777c9c66ba177ccfea23f2a216ff6721e78a662cd17019488c417135299cd89 size: 528
+```
+
+
+### Pulling from the registry
+
+This is the tricky part, and the one that will make your mind go into an infinite loop. let's start from a standard yaml pulling our image from an external registry:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpine
+  namespace: default
+spec:
+  containers:
+  - image: alpine:latest
+    command:
+      - /bin/sh
+      - "-c"
+      - "sleep 60m"
+    imagePullPolicy: IfNotPresent
+    name: alpine
+  restartPolicy: Always
+```
+
+Our <code>image: alpine:latest</code> is by default pulled from <code>docker.io/alpine:latest</code> inside the cluster. 
+Fine, you will think, then if I want to pull from the **kube-registry** service I just need to make use of the usual convoluted form to access services from other namespaces: *service-y.namespace-b.svc.cluster.local*
+
+```yaml
+...
+  containers:
+  - image: kube-registry.kube-registry.svc.cluster.local/alpine:latest
+    command:
+...
+```
+
+This just feels very weird as you type it, and in the bottom of our heart we already know this won't work, but we are stupid and we try anyways because we are simple humans and we love to waste our time:
+
+```bash
+$ kubectl apply -f alpine.yaml
+$ kubectl get all
+NAME         READY   STATUS         RESTARTS   AGE
+pod/alpine   0/1     ErrImagePull   0          8s
+```
+
+Let's have a look at the events:
+
+```bash
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  64s                default-scheduler  Successfully assigned default/alpine to ip-10-9-70-48.us-west-2.compute.internal
+  Normal   Pulling    28s (x3 over 63s)  kubelet            Pulling image "kube-registry.kube-registry.svc.cluster.local/alpine:latest"
+*  Warning  Failed     28s (x3 over 63s)  kubelet            Failed to pull image "kube-registry.kube-registry.svc.cluster.local/alpine:latest": rpc error: code = Unknown desc = Error response from daemon: Get "https://kube-registry.kube-registry.svc.cluster.local/v2/": dial tcp: lookup kube-registry.kube-registry.svc.cluster.local: no such host *
+  Warning  Failed     28s (x3 over 63s)  kubelet            Error: ErrImagePull
+  Normal   BackOff    2s (x4 over 63s)   kubelet            Back-off pulling image "kube-registry.kube-registry.svc.cluster.local/alpine:latest"
+  Warning  Failed     2s (x4 over 63s)   kubelet            Error: ImagePullBackOff
+```
+
+Now we are starting to understand that we need to take a journey down the rabbit hole once again, so let's get into the guts of k8s.
+
+First obvious question that brings us in the guts of k8s, who pulls this image ?
+The answer is fairly simple: the kubelet is making use of the container runtime on the host, requesting it to pull from the specified registry.
+
+But the problem is that the container runtime (dockerd, cri-o, or whatever), is outside of k8s and as such has no knowledge of who actually is kube-registry.kube-registry.svc.cluster.local/alpine:latest and how to resolve its dns name to an actual ip address of the pod. From having figured out the problem we are now completely empty handed, what a joyful moment.
+
+## NodePort happy that you exist
+
+So at this point why not using one of the most mistreated functionalities of k8s ? NodePort is accused of being, and honestly feels like a freak of nature, breaking any security and authorization scheme, provides a quick shortcut for exposing stuff outside. Basically if you have a closer look to our deployment for the kube-registry we exposed the service with <code>nodePort: 30100</code>, which means that our registry will be available on any node of the cluster at this port.
+
+Hell, this is immensely stupid, let's try it in one sec:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpine
+  namespace: default
+spec:
+  containers:
+  - image: localhost:30100/alpine:latest
+    command:
+      - /bin/sh
+      - "-c"
+      - "sleep 60m"
+    imagePullPolicy: IfNotPresent
+    name: alpine
+  restartPolicy: Always
+```
+
+Apply it and magically:
+
+```bash
+$ kubectl apply -f alpine.yaml
+pod/alpine created
+$ kubectl get all
+NAME         READY   STATUS    RESTARTS   AGE
+pod/alpine   1/1     Running   0          45m
+```
+
+If you had an ingress set up, you could have achieved the same thing by exposing the registry as a public facing ingress, but that would have made things way more complex, and requiring the ingress to handle tls termination since the container runtime naturally pulls only from tls secured registries, with the execption of ones configured in the daemon.json, example:
+```json
 {
-
-	FILTER_CATHEGORY_INT(FILE_CATH)
-	FILTER_OWN_PID_INT()
-	DUMP_FUNC(file_open, struct file *file)
-	
-	DUMP_FILE_STRUCT(file)
-
-	bpf_printk("lsm_hook: file: file_open\n");
-	return 0;
-}
-``` 
-
-Without entering in too much detail, we simply declare the hook we will attach to, with the arguments that will be passed, and we call a number of macros which basically have theese roles:
-
-<code>FILTER_CATHEGORY_INT()</code>   filter out hook cathegory (set by userspace at probe launch)  <br/>  
-<code>FILTER_OWN_PID()</code>  filter hook calls related to specific pid (set by userspace at probe launch)  <br/>  
-<code>DUMP_FUNC()</code>  dump hook signature event (push to ringbuf) <br/>  
-<code>DUMP_FILE_STRUCT()</code>  dump view of the file struct (push to ringbuf) <br/>  
-
-In addition for debug purposes we trace the operation with <code>bpf_printk</code> accessible at:
-<code> cat /sys/kernel/debug/tracing/trace_pipe </code>
-
-What follows is an example implementation of one of the previous event dump macros:
-
-```c
-#define DUMP_FUNC(FNAME, ...) {                             \
-	const char func_call_name[] = #FNAME;                   \
-	const char func_call_args[] = #__VA_ARGS__;             \
-	dump_func(func_call_name, func_call_args);              \
-}	
-
-...
-
-static int dump_func(const char *fname, const char *fargs) {
-
-	struct func_call_Event *evt; 								
-	char func_call_label[] = "HOOK_CALL";
-
-	evt = bpf_ringbuf_reserve(&ringbuf, sizeof(*evt), ringbuffer_flags);
-
-	if (!evt)										
-		return -1;									
-
-	evt->super.etype = FUNCTION_CALL;
-
-	bpf_probe_read_str(evt->super.label, sizeof(evt->super.label), func_call_label);	
-	bpf_probe_read_str(evt->name, sizeof(evt->name), fname);				
-	bpf_probe_read_str(evt->args, sizeof(evt->args), fargs);				
-
-	bpf_ringbuf_submit(evt, ringbuffer_flags);						
-
-	return 0;
+  "insecure-registries" : ["myregistrydomain.com:5000"]
 }
 ```
 
-As you see inside the <code>dump_func</code> definition, we simply allocate a new event and mark it with a label, we set the name and the arguments. In order to push this information to the ringbuffer we need to first reserve enough space with <code>bpf_ringbuf_reserve</code> and submit the forged event with <code>bpf_ringbuf_submit</code>  
-
-You may have immediately noticed a couple of quirks:
-
-1. Most of this code operates on variables by making use of specific helper functions (e.g. <code>bpf_prove_read_str</code> exposed along with the previous ones by the **libbpf** library. This required in order to safely read information inside the kernel
-
-2. The macro definition has a strange form, declares a local string inside <u>a code block</u> then calls <code>dump_func()</code> passing this string. This is required because declaring a string literal outside of the block generates an error <code>libbpf: elf: skipping unrecognized data section(6) .rodata.str1.1</code> due to the fact that libbpf does not seem to support string literals in the **rodata** elf section atm. To work around this probelm a simple quick solution is to declare the literal inside a code block in such a way that it can be simply allocated **on the stack**.
-
-A similar logic is also implemented to dump hook arguments, referring to the <code><strong>file_open()</strong></code> call for example we can extract information from the <code>file</code> struct as follows:
-
-```c
-/* file */
-#define DUMP_FILE_STRUCT(...) {                                     \
-	DUMP_MEMBER_UINT(__VA_ARGS__,f_mode)                            \
-	DUMP_DENTRY_STRUCT(__VA_ARGS__,f_path.dentry)                   \
-}	
-
-...
-
-#define DUMP_MEMBER_UINT(...) {                                     \
-	const char dump_member_name[] = #__VA_ARGS__;                   \
-	unsigned int mptr = BPF_CORE_READ(__VA_ARGS__);                 \
-	dump_uint_member(dump_member_name, mptr);                       \
-}
-
-```
-
-As you see nested macro definitions have been implemented in order to allow reuse of <code>DUMP...STRUCT()</code> logic.   
-Macro <code>BPF_CORE_READ()</code> is a libbpf helper which allows us to safely access kernel structure members across different versions.  
-[This post](https://facebookmicrosites.github.io/bpf/blog/2020/02/19/bpf-portability-and-co-re.html) will provide you with much greater detail.
-
-### userspace executable
-
-At the userspace side the application entrypoint looks more or less like this:
-
-```c
-...
-	/* Parse command line arguments */
-	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
-	if (err)
-		return err;
-...
-
-	int child_pid = exec_prog_and_wait(my_exec_path, my_exec_argv);
-...
-	/* Configure bpf probe with init values */
-	skel->bss->my_pid = child_pid;
-	skel->rodata->cathegory = argp_args.cathegory;
-...
-
-	/* Attach tracepoints */
-	err = lsmtrace_bpf__attach(skel);
-	if (err) {
-		log_err("Failed to attach BPF skeleton\n");
-		goto cleanup;
-	}
-
-	/* Send child cont signal */
-	log_verb("Attached, starting execution\n");
-	kill(child_pid, SIGCONT);	
-
-	/* Set up ring buffer polling */
-	ringbuffer = ring_buffer__new(bpf_map__fd(skel->maps.ringbuf), handle_event, NULL, NULL);
-	if (!ringbuffer) {
-		err = -1;
-		log_err("Failed to create ring buffer\n");
-		goto cleanup;
-	}
-...
-	while (!exiting) {
-...
-
-		err = ring_buffer__poll(ringbuffer, 100 /* timeout, ms */);
-...
-	}
-
-```
-
-This is pretty straightforward, but just to sum it up: after parsing command line args we <u>spawn the target executable</u> to be traced, then we initialize the bpf probe with the target executable pid and attach it to the hooks. Right after that we see that a <code>kill(child_pid,<strong>SIGCONT</strong>)</code> signal is sent to our process. That happens because the new process is **paused** as soon as it's spawned by the main thread, so that it can be conveniently converted by an <code><strong>execve()</strong></code> call right after all hooks have been attached at the kernel side. After all this we just sit there polling the ringbuffer for new events through <code>ring_buffer__poll()</code> call. The flow should be quite similar to this:
-
-<img
-  className="crisp sm:pl-10 sm:pr-10 border border-gray-200 rounded-md"
-  src={userflow} 
-/>
-
-Once events get intercepted by the userspace, they are simply cast from generic <u>polymorphic type</u> <code>Event</code> to the specific type so that it can be printed to stdout. All this happens inside a specific <code>statedump</code> library module. Follws definition of the types and example of a simple event dump method for strings:
-
-```c
-
-/* events.h */
-
-typedef struct Event {
-	enum Event_type etype;
-	char label[MAX_LABEL_SIZE];
-} Event;
-...
-typedef struct str_member_Event {
-	Event super;
-	char member[MAX_STR_SIZE];
-	char msg[MAX_MSG_SIZE];
-} str_member_Event;
-...
-
-/* statedump.c */
-
-int printStrMemberEvt(const struct Event *evt) {
-	const str_member_Event* tevt = (str_member_Event*) evt;
-	log_info("     %s = ", tevt->msg);
-	log_info("%s\n", tevt->member);
-	return 0;
-}
-```
-
-## Let`s have some fun
-
-Ok, enough talking, let's see what lsmtrace actually does in action.  
-As an extremely simple example we want to snoop all kernel security events triggered by the execution of an embarassingly simple <code>ls /home</code> command. In order to achieve this we simply launch something like <code>lsmtrace [executable] -a "args"</code> where <code>-a</code> flag specifies eventual arguments which may be passed to the executable. 
-Functionality was extended to dump raw events when syscalls are entered and exited, in order to enrich lsm hook events with additional context which is quite important to understand what is actually happening under the hood.
-
-### A couple details
-1. In order to run this you will need a linux kernel > 5.7 compiled with the following options (in future distro kernel upstream releases these are likely to be enabled by default):
-* BPF_SYSCALL
-* DEBUG_INFO
-* DEBUG_INFO_BTF
-* BPF_LSM
-
-2. By now you will have to pass the full path of the executable, so if launching <code>ls</code> just pass <code>/usr/bin/ls</code> 
-
-3. Attaching all the linux security module hooks is not immediate with bpf, so just wait some seconds and just don't get mad
-
-### Please run this thing
-
-Ok let's see it in action (i filtered the output a little as it gets quite verbose):
-```
-$ sudo ./lsmtrace /usr/bin/ls -a "/home"
-
-Attaching hooks, don`t rush..
-
--> SYS_CALL_EXIT:   pause
-...
--> SYS_CALL_ENTER:  rt_sigreturn
--> SYS_CALL_EXIT: 
-...
--> SYS_CALL_ENTER:  execve
--> HOOK_CALL: -> vm_enough_memory( struct mm_struct *mm, long pages )
--> HOOK_CALL: -> cred_prepare( struct cred *new, const struct cred *old, gfp_t gfp )
--> HOOK_CALL: -> file_alloc_security( struct file *file )
-```
-
-From the start it's already quite clear what is happening if we keep an eye on the previous flow diagram: first the child process is **unpaused** then execve() syscall is called in order to execute the actual <code>/usr/bin/ls /home</code> command.   
-What happens underneath is quite interesting: since the executable has to be mapped to virtual memory a first check is made on available pages with <code>vm_enough_memory()</code> hook so that we can efficiently avoid to request pages to the kernel if none is available. <code>cred_prepare()</code> and <code>file_alloc_security</code> setup security credentials for executable by copying the old ones and allocate the initial <code>file->f_security</code> struct (have a look [here](https://www.kernel.org/doc/html/latest/security/credentials.html) to dig deeper),  
-
-But let's move on..
-
-```
--> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 2
-     inode,i_mode = 16877
-...
--> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 3670017
-...
--> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 3670018
-     inode,i_mode = 16877
-...
--> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 3670696
-     inode,i_mode = 33261
-...
--> HOOK_CALL: -> file_open( struct file *file )
-     file,f_path.dentry,d_name.name = ls
-     file,f_path.dentry,d_inode,i_ino = 3670696
-...
-```
-
-Permission is requested for three inodes, can you guess who are they ? Let's see..
-```
-$ ls -id /
-2 /
-$ ls -id /usr
-3670017 /usr
-$ ls -id /usr/bin
-3670018 /usr/bin
-```
-Once the thread has jumped on each of these inodes <code>file_open()</code> hook is triggered for **ls** in order to actually start loading the executable...   
-As you can see the level of detail is extreme, just consider that we havn't even opened the executable to be loaded, so allow me to quickly jump to the points that imho are the most juicy.
-
-```
--> HOOK_CALL: -> inode_follow_link( struct dentry *dentry, struct inode *inode, bool rcu )
-     dentry,d_name.name = lib
-     dentry,d_inode,i_ino = 14
-...
--> HOOK_CALL: -> file_open( struct file *file )
-     file,f_mode = 32769
-     file,f_path.dentry,d_flags = 0
-     file,f_path.dentry,d_name.name = ld-2.32.so
-...
--> HOOK_CALL: -> bprm_committing_creds( struct linux_binprm *bprm )
-     bprm,file,f_path.dentry,d_name.name = ls
-     bprm,file,f_path.dentry,d_inode,i_ino = 3670696
--> HOOK_CALL: -> bprm_committed_creds( struct linux_binprm *bprm )
-     bprm,file,f_path.dentry,d_name.name = ls
-     bprm,file,f_path.dentry,d_inode,i_ino = 3670696
-```
-
-What happens here is quite interesting: symlinks are followed through <code>lib</code> up to <code>ld-2.32.so</code> which is the **dynamic linker**, which is now invoked in order to launch our actual executable since this has to be linked against several dyamic libraries, more on that in a minute. <code>bprm_committing_creds</code> and <code>bprm_committed_creds</code> will officially commit new security credentials for the executable, that is finally ok to be launched.
-
-```
--> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
-     file,f_mode = 32797
-     file,f_path.dentry,d_flags = 64
-     file,f_path.dentry,d_name.name = ls
-... 
--> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
-     file,f_mode = 32797
-     file,f_path.dentry,d_flags = 0
-     file,f_path.dentry,d_name.name = ld-2.32.so
-```
-
-The executable and dynamic linker are *finally* mapped to virtual memory. 
-
-```
--> SYS_CALL_EXIT:   execve
-     ret: 0
--> SYS_CALL_ENTER:  brk
--> SYS_CALL_EXIT:   brk
-     ret: 94264417042432
--> SYS_CALL_ENTER:  arch_prctl
--> SYS_CALL_EXIT:   arch_prctl
-     ret: -22
--> SYS_CALL_ENTER:  access
--> HOOK_CALL: -> cred_prepare( struct cred *new, const struct cred *old, gfp_t gfp )
--> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 2
-> HOOK_CALL: -> inode_permission( struct inode *inode, int mask )
-     inode,i_ino = 524289
--> SYS_CALL_EXIT:   access
-     ret: -2
-```
-
-At this point we notice <code>execve()</code> giving the way to <code>brk()</code> syscall (likely coming from a <code>malloc()</code> call to check the end of the heap segment), <code>arch_prctl()</code> which is used to set up *thread local storage* and <code>access()</code> syscallwhich seem to fail with 2 = <code>ENOENT</code> code. 
-
-If we have a look deeper with **strace** we can see that the process is trying to access <code>/etc/ld.so.preload</code> which is a list of libraries that should be preloaded before the others. This is happily ignored so that the process can go on with its dance..
+The fact that we leverage a local endpoint for our registry allows us to pull without being tls since the runtime always trusts his own host. Since everybody likes watching drawings instead of reading boring stuff here you go.
 
 
-```
--> SYS_CALL_ENTER:  openat
-...
--> HOOK_CALL: -> file_open( struct file *file )
-     file,f_path.dentry,d_name.name = libselinux.so.1
-     file,f_path.dentry,d_inode,i_ino = 3677561
-...
--> SYS_CALL_ENTER:  read
--> HOOK_CALL: -> file_permission( struct file *file, int mask )
-     file,f_path.dentry,d_name.name = libselinux.so.1
-     file,f_path.dentry,d_inode,i_ino = 3677561
--> SYS_CALL_EXIT:   read
-     ret: 832
-...
--> SYS_CALL_ENTER:  mmap
--> HOOK_CALL: -> mmap_file( struct file *file, unsigned long reqprot, unsigned long prot, unsigned long flags )
-     file,f_mode = 32797
-     file,f_path.dentry,d_flags = 0
-     file,f_path.dentry,d_name.name = libselinux.so.1
-...
--> SYS_CALL_ENTER:  openat
-...
--> HOOK_CALL: -> file_open( struct file *file )
-     file,f_path.dentry,d_name.name = libc-2.32.so
-... 
-```
 
-At this time the process starts accessing and loading the dynamic dependencies through <code>p/read()</code> and <code>mmap()</code> syscalls.   
+### Other funny games with NodePort
 
-Reading on faster through the stream of events we get:
+Once one gets used to play with k8s PVs and PVCs, one of the first things that I felt the urge to implement is an ubiquitous shared PVC that i can mount on any machine to access the same filesystem for multiple read and writes. 
+To get this working quick and dirty I quickly jumped on the solution of implementing an internal nfs service, and pointing my volumes to this one.
 
-```
--> SYS_CALL_ENTER:  ioctl
--> HOOK_CALL: -> file_ioctl( struct file *file, unsigned int cmd, unsigned long arg )
-     file,f_path.dentry,d_name.name = out
-...
- -> SYS_CALL_ENTER:  openat
-...
--> HOOK_CALL: -> file_open( struct file *file )
-     file,f_mode = 32769
-     file,f_path.dentry,d_flags = 16448
-     file,f_path.dentry,d_name.name = home
-     file,f_path.dentry,d_inode,i_ino = 3014657
-... 
--> SYS_CALL_ENTER:  fstat
--> SYS_CALL_EXIT:   fstat
-...
--> SYS_CALL_ENTER:  getdents64
--> HOOK_CALL: -> file_permission( struct file *file, int mask )
-     file,f_path.dentry,d_name.name = home
-     file,f_path.dentry,d_inode,i_ino = 3014657
--> SYS_CALL_EXIT:   getdents64
-     ret: 104
-...
-```
+This will quickly bring us to the very same problem, since the nfs client is baked inside the linux kernel, once again will not be able to resolve the k8s service name into an ip addres, yet it will always be capable of resolving the localhost.
+The bottom line of this then is that the previous technique can be applied for create a persistent shared storage available to anybody inside the k8s cluster. 
 
-We observe that **stdout** is setup by <code>ioctl()</code> call and eventually this is where the executable does the actual job, by accessing the file <code>/home</code> and calling <code>fstat()</code> and <code>getdents64()</code> syscalls to gather information about its **dentries**.  
-In an effort not to get killed I will spare you the details of how the whole process is terminated after  the job, but if yout want to find it out you can play with the sources and have a little of fun.
+This is just food for another post in case I will find the time or the need to go back to this technical topic.
+
 
 --- 
 
-## Back to the port 
+## End of the journey
 
-What I showed you here was meant to be two things:
-1. A real world application leveraging **KRSI** for monitoring
-2. A deeper approach for reverse engineering a specific executable behavior against your OS kernel
+I find this hacky registry deployment extremely useful, switching through different environments being able to always point my images to the same registry name feels like a dream, and avoids me the need to handle registry credentials. This is definitely not the secure and production way to run something, but sometimes we really just want our stuff to be pushed in a minute.
 
-I am perfectly aware that part of or maybe even all these functionalities could be implemented by leveraging **bpftrace** but the intent of **lsmtrace** is to provide a plug and play functionality exposing a view of the kernel structures related to specific hook calls, just as **strace** does with syscalls.  
-
-I am currently extending this information along with my need to access it, so as you might expect, although <u>all hook calls</u> are currently implemented, not all their struct arguments are dumped to console. Yet thanks to the helper macros available in the project, adding new ones should be a matter of minutes.  
-
-If you find this useful or you want to play with the code **[HERE](https://github.com/lumontec/lsmtrace)** you can find everything you need, feel free to open PRs or file issues and don't hesitate to contact me if you want to talk about this topic and much more. I am always happy to chat about technology.
-
+Let me know your thoughts on medium or check out my repos if you are curious about my projects.
 
 
 

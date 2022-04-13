@@ -1,7 +1,6 @@
 import { lumontec } from '@/authors'
 import image from './card.jpg'
-import arch from './1_arch.png'
-import userflow from './1_userflow.png'
+import arch from './2_internal_registry.png'
 
 export const meta = {
   title: 'Running container registries inside k8s',
@@ -263,6 +262,10 @@ If you had an ingress set up, you could have achieved the same thing by exposing
 
 The fact that we leverage a local endpoint for our registry allows us to pull without being tls since the runtime always trusts his own host. Since everybody likes watching drawings instead of reading boring stuff here you go.
 
+<img
+  className="crisp p-5 border border-gray-200 rounded-md"
+  src={arch} 
+/>
 
 
 ### Other funny games with NodePort
